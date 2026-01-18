@@ -14,7 +14,8 @@ function laconToJson(text) {
     let isArrayMode = false;
     let arrayKey = '';
     let arrayContent = [];
-    const varRegex = /^\s*\$([\w.-]+)\s+(.+)$/;
+    // Обновлено: varRegex теперь проверяет, что перед $ нет обратного слеша
+    const varRegex = /^\s*(?<!\\)\$([\w.-]+)\s+(.+)$/;
     const blockStartRegex = /^\s*([\w.-]+)\s*(?:>\s*([\w.-]+)\s*)?\{/;
     const multiKeyRegex = /^\s*\[([\w\s,-]+)\]\s*=?\s*(.+)$/;
     const multilineStartRegex = /^\s*([\w.-]+)\s*(@)?\(\s*$/;
@@ -29,6 +30,7 @@ function laconToJson(text) {
                 const finalValue = isRawMultiline
                     ? processRawMultiline(multilineContent)
                     : processQuotedMultiline(multilineContent);
+                // Сначала разрешаем переменные, затем убираем экраны \$
                 const resolved = resolveVariables(finalValue, variableRegistry);
                 const processedValue = isRawMultiline ? resolved : unescapeString(resolved);
                 if (typeof currentScope[multilineKey] === 'string' && currentScope[multilineKey] !== "") {
@@ -136,8 +138,9 @@ function laconToJson(text) {
     return JSON.stringify(result, null, 2);
 }
 exports.laconToJson = laconToJson;
+// Изменено: добавлено преобразование \$ в $
 function unescapeString(str) {
-    return str.replace(/\\(n|r|t|b|f|"|\\|u\{([0-9A-Fa-f]+)\})/g, (match, type, unicodeCode) => {
+    return str.replace(/\\(n|r|t|b|f|"|\\|\$|u\{([0-9A-Fa-f]+)\})/g, (match, type, unicodeCode) => {
         switch (type[0]) {
             case 'n': return '\n';
             case 'r': return '\r';
@@ -146,6 +149,7 @@ function unescapeString(str) {
             case 'f': return '\f';
             case '"': return '"';
             case '\\': return '\\';
+            case '$': return '$'; // Поддержка экранированного доллара
             case 'u':
                 const codePoint = parseInt(unicodeCode, 16);
                 return String.fromCodePoint(codePoint);
@@ -322,8 +326,10 @@ function processQuotedMultiline(lines) {
     })
         .join('\n');
 }
+// Изменено: resolveVariables теперь игнорирует \$
 function resolveVariables(value, vars) {
-    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => vars[varName] !== undefined ? vars[varName] : match);
+    // Используем отрицательный просмотр назад (?<!\\), чтобы не матчить \$
+    return value.replace(/(?<!\\)\$([\w.-]+)(~?)/g, (match, varName) => vars[varName] !== undefined ? vars[varName] : match);
 }
 function unwrapQuotes(val) {
     if (val.startsWith('"') && val.endsWith('"'))
@@ -372,6 +378,7 @@ function parseValue(val, vars) {
     }
     if (/^-?\d+(\.\d+)?$/.test(val))
         return Number(val);
+    // В конце обычных строк тоже нужно запустить unescapeString, чтобы убрать \ из \$
     return unescapeString(val);
 }
 //# sourceMappingURL=laconToJson.js.map

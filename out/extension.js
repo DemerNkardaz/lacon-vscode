@@ -96,7 +96,7 @@ async function activate(context) {
         const activeLines = new Set(selections.map(s => s.active.line));
         const embeddedRanges = getEmbeddedLanguageRanges(text);
         variables.clear();
-        const combinedRegex = /(?:\/\*\*([\s\S]*?)\*\/[\r\n\s]*)?^\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)\s+(.+)$/gum;
+        const combinedRegex = /(?:\/\*\*([\s\S]*?)\*\/[\r\n\s]*)?^(?<!\\)\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)\s+(.+)$/gum;
         let match;
         while ((match = combinedRegex.exec(text))) {
             const rawDoc = match[1];
@@ -128,7 +128,7 @@ async function activate(context) {
                 catch { }
             }
         }
-        const varUsageRegEx = /\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
+        const varUsageRegEx = /(?<!\\)\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
         while ((m = varUsageRegEx.exec(text))) {
             if (isInEmbeddedLanguage(m.index, embeddedRanges))
                 continue;

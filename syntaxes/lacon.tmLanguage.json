@@ -3,8 +3,9 @@
   "name": "LaCoN",
   "patterns": [
     { "include": "#comments" },
-    { "include": "#multiple_keys" },
+    { "include": "#escapes" },
     { "include": "#unicode_escape" },
+    { "include": "#multiple_keys" },
     { "include": "#strings_quoted" },
     { "include": "#multiline_strings" },
     { "include": "#arrays" }, 
@@ -64,6 +65,14 @@
               }
             }
           ]
+        }
+      ]
+    },
+    "escapes": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.lacon",
+          "match": "\\\\."
         }
       ]
     },
@@ -357,7 +366,7 @@
       "patterns": [
         { 
           "name": "storage.type.lacon", 
-          "match": "\\$[\\p{L}_](?:[\\p{L}0-9._-]*[\\p{L}0-9_])?"
+          "match": "(?<!\\\\)\\$[\\p{L}_](?:[\\p{L}0-9._-]*[\\p{L}0-9_])?"
         }
       ]
     },
@@ -381,7 +390,7 @@
       "patterns": [
         {
           "name": "keyword.operator.lacon",
-          "match": "(\\+|\\-|\\*|/|%|\\^|×|÷|⋅|−|±|√|∛|∜|∶)"
+          "match": "(?<![\\p{L}0-9_])(?:\\+|\\-|\\*|/|%|\\^|×|÷|⋅|−|±|√|∛|∜|∶)(?![\\p{L}0-9_])"
         }
       ]
     },

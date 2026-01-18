@@ -14,7 +14,7 @@ export function laconToJson(text: string): string {
     let arrayKey = '';
     let arrayContent: any[] = [];
 
-    const varRegex = /^\s*\$([\w.-]+)\s+(.+)$/;
+    const varRegex = /^\s*(?<!\\)\$([\w.-]+)\s+(.+)$/;
     const blockStartRegex = /^\s*([\w.-]+)\s*(?:>\s*([\w.-]+)\s*)?\{/;
     const multiKeyRegex = /^\s*\[([\w\s,-]+)\]\s*=?\s*(.+)$/;
     const multilineStartRegex = /^\s*([\w.-]+)\s*(@)?\(\s*$/;
@@ -155,7 +155,7 @@ export function laconToJson(text: string): string {
 }
 
 function unescapeString(str: string): string {
-    return str.replace(/\\(n|r|t|b|f|"|\\|u\{([0-9A-Fa-f]+)\})/g, (match, type, unicodeCode) => {
+    return str.replace(/\\(n|r|t|b|f|"|\\|\$|u\{([0-9A-Fa-f]+)\})/g, (match, type, unicodeCode) => {
         switch (type[0]) {
             case 'n': return '\n';
             case 'r': return '\r';
@@ -164,6 +164,7 @@ function unescapeString(str: string): string {
             case 'f': return '\f';
             case '"': return '"';
             case '\\': return '\\';
+            case '$': return '$';
             case 'u':
                 const codePoint = parseInt(unicodeCode, 16);
                 return String.fromCodePoint(codePoint);
@@ -350,7 +351,7 @@ function processQuotedMultiline(lines: string[]): string {
 }
 
 function resolveVariables(value: string, vars: Record<string, string>): string {
-    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => 
+    return value.replace(/(?<!\\)\$([\w.-]+)(~?)/g, (match, varName) => 
         vars[varName] !== undefined ? vars[varName] : match
     );
 }
