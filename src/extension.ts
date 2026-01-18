@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import * as l10n from '@vscode/l10n';
+import { laconToJson } from './laconToJson';
+import { LaconJsonProvider } from './previewProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
-		const locale = vscode.env.language;
+    const locale = vscode.env.language;
     const l10nDir = vscode.Uri.joinPath(context.extensionUri, 'l10n');
-    
     let l10nFile = vscode.Uri.joinPath(l10nDir, 'bundle.l10n.json');
 
     if (locale !== 'en') {
@@ -23,16 +24,23 @@ export async function activate(context: vscode.ExtensionContext) {
         console.error("Critical error loading l10n:", e);
     }
 
-    const LANG_ID = 'lacon'; 
+    const LANG_ID = 'lacon';
+    const jsonProvider = new LaconJsonProvider();
+    const variables = new Map<string, { value: string, line: number, doc?: string }>();
+    let timeout: NodeJS.Timeout | undefined = undefined;
 
     const concealDecorationType = vscode.window.createTextEditorDecorationType({
         textDecoration: 'none; display: none;',
         cursor: 'pointer'
     });
 
-    let timeout: NodeJS.Timeout | undefined = undefined;
-    let lastSelectionLine: number = -1;
-    let lastSelectionChar: number = -1;
+    context.subscriptions.push(
+        vscode.workspace.registerTextDocumentContentProvider(LaconJsonProvider.scheme, jsonProvider)
+    );
+
+    function getVirtualUri(laconUri: vscode.Uri): vscode.Uri {
+        return vscode.Uri.parse(`${LaconJsonProvider.scheme}:Preview.json?${encodeURIComponent(laconUri.toString())}`);
+    }
 
     function getCharDetails(char: string, hex: string) {
         const codePoint = char.codePointAt(0) || 0;
@@ -59,134 +67,135 @@ export async function activate(context: vscode.ExtensionContext) {
         return md;
     }
 
-    function getVarDetails(name: string, value: string, line: number) {
+    function getVarDetails(name: string, info: { value: string, line: number, doc?: string }) {
         const md = new vscode.MarkdownString();
         md.isTrusted = true;
         md.appendMarkdown(`${l10n.t("var.title")}$${name}\n\n---\n\n`);
+        if (info.doc) md.appendMarkdown(`${info.doc}\n\n---\n\n`);
         md.appendMarkdown(`| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`);
         md.appendMarkdown(`| :--- | :--- |\n`);
-        md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${value}\` |\n`);
-        md.appendMarkdown(`| **${l10n.t("var.defined")}** | ${l10n.t("var.line")} ${line + 1} |\n`);
+        md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${info.value}\` |\n`);
+        md.appendMarkdown(`| **${l10n.t("var.defined")}** | ${l10n.t("var.line")} ${info.line + 1} |\n`);
         return md;
     }
 
+    function getEmbeddedLanguageRanges(text: string): Array<{ start: number, end: number }> {
+        const ranges: Array<{ start: number, end: number }> = [];
+        const embeddedRegex = /\/\*\*\s*(json|javascript|js|typescript|ts|python|py|css|html|xml|yaml|yml|sql|markdown|md|regex|regexp|shell|bash|sh)\s*\n([\s\S]*?)\*\//gi;
+        let match;
+        while ((match = embeddedRegex.exec(text)) !== null) {
+            ranges.push({ start: match.index, end: match.index + match[0].length });
+        }
+        return ranges;
+    }
+
+    function isInEmbeddedLanguage(position: number, ranges: Array<{ start: number, end: number }>): boolean {
+        return ranges.some(range => position >= range.start && position < range.end);
+    }
+
+
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
+        if (!editor || editor.document.languageId !== LANG_ID) return;
 
         const text = editor.document.getText();
         const decorations: vscode.DecorationOptions[] = [];
         const selections = editor.selections;
-
         const activeLines = new Set(selections.map(s => s.active.line));
+        const embeddedRanges = getEmbeddedLanguageRanges(text);
 
-        const variables = new Map<string, { value: string, line: number }>();
-        const declRegEx = /^\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)\s+(.+)$/gum;
-        let declMatch;
-        while ((declMatch = declRegEx.exec(text))) {
-            const varName = declMatch[1];
-            const varValue = declMatch[2].trim();
-            const line = editor.document.positionAt(declMatch.index).line;
-            variables.set(varName, { value: varValue, line: line });
+        variables.clear();
+
+        const combinedRegex = /(?:\/\*\*([\s\S]*?)\*\/[\r\n\s]*)?^\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)\s+(.+)$/gum;
+        let match;
+        while ((match = combinedRegex.exec(text))) {
+            const rawDoc = match[1];
+            const varName = match[2];
+            const varValue = match[3].trim();
+            const line = editor.document.positionAt(match.index + (match[0].indexOf('$'))).line;
+            let cleanDoc = rawDoc ? rawDoc.split('\n').map(l => l.replace(/^\s*\* ?/, '').trim()).filter(l => l !== '').join('\n') : undefined;
+            variables.set(varName, { value: varValue, line: line, doc: cleanDoc });
         }
 
         const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
         let m;
         let shouldShowHover = false;
-
         while ((m = unicodeRegEx.exec(text))) {
+            if (isInEmbeddedLanguage(m.index, embeddedRanges)) continue;
             const startPos = editor.document.positionAt(m.index);
-            const endPos = editor.document.positionAt(m.index + m[0].length);
-            const range = new vscode.Range(startPos, endPos);
-            
-            const isLineActive = activeLines.has(startPos.line);
-            
-            if (isLineActive) {
+            const range = new vscode.Range(startPos, editor.document.positionAt(m.index + m[0].length));
+            if (activeLines.has(startPos.line)) {
                 shouldShowHover = true;
             } else {
                 try {
                     const char = String.fromCodePoint(parseInt(m[1], 16));
                     decorations.push({
                         range: range,
-                        renderOptions: { 
-                            before: { 
-                                contentText: char, 
-                                color: new vscode.ThemeColor('charts.blue'), 
-                                fontWeight: 'normal',
-                                backgroundColor: 'rgba(0, 122, 204, 0.1)' 
-                            } 
-                        }
+                        renderOptions: { before: { contentText: char, color: new vscode.ThemeColor('charts.blue'), backgroundColor: 'rgba(0, 122, 204, 0.1)' } }
                     });
-                } catch (e) {}
+                } catch {}
             }
         }
 
-        const varUsageRegEx = /\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)/gum;
+        const varUsageRegEx = /\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
         while ((m = varUsageRegEx.exec(text))) {
+            if (isInEmbeddedLanguage(m.index, embeddedRanges)) continue;
             const varName = m[1];
+            const hasGlue = m[2] === '~';
             const startPos = editor.document.positionAt(m.index);
-            const endPos = editor.document.positionAt(m.index + m[0].length);
-            const range = new vscode.Range(startPos, endPos);
+            const range = new vscode.Range(startPos, editor.document.positionAt(m.index + m[0].length));
             const varInfo = variables.get(varName);
-            
-            const isLineActive = activeLines.has(startPos.line);
 
-            if (isLineActive) {
+            if (activeLines.has(startPos.line)) {
                 shouldShowHover = true;
             } else if (varInfo && startPos.line > varInfo.line) {
                 decorations.push({
                     range: range,
-                    renderOptions: {
-                        before: {
-                            contentText: varInfo.value,
-                            color: new vscode.ThemeColor('symbolIcon.variableForeground'),
-                            fontStyle: 'italic',
-                            backgroundColor: 'rgba(128, 128, 128, 0.1)'
-                        }
-                    }
+                    renderOptions: { before: { contentText: varInfo.value, color: new vscode.ThemeColor('symbolIcon.variableForeground'), fontStyle: 'italic', backgroundColor: 'rgba(128, 128, 128, 0.1)' } }
                 });
             }
         }
 
         editor.setDecorations(concealDecorationType, decorations);
-        
         if (shouldShowHover) {
-            Promise.resolve().then(() => {
-                vscode.commands.executeCommand('editor.action.showHover');
-            });
+            Promise.resolve().then(() => vscode.commands.executeCommand('editor.action.showHover'));
         }
+    }
+
+    function triggerUpdate() {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            updateDecorations();
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === LANG_ID) {
+                jsonProvider.update(getVirtualUri(editor.document.uri));
+            }
+        }, 50);
     }
 
     const hoverProvider = vscode.languages.registerHoverProvider(
         { language: LANG_ID, scheme: 'file' },
         {
             provideHover(document, position) {
+                const text = document.getText();
+                const offset = document.offsetAt(position);
+                const embeddedRanges = getEmbeddedLanguageRanges(text);
+                if (isInEmbeddedLanguage(offset, embeddedRanges)) return null;
+
                 const lineText = document.lineAt(position.line).text;
-                const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
                 let m;
+                const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
                 while ((m = unicodeRegEx.exec(lineText)) !== null) {
                     const range = new vscode.Range(position.line, m.index, position.line, m.index + m[0].length);
-                    if (range.contains(position)) {
-                        return new vscode.Hover(getCharDetails(String.fromCodePoint(parseInt(m[1], 16)), m[1]), range);
-                    }
+                    if (range.contains(position)) return new vscode.Hover(getCharDetails(String.fromCodePoint(parseInt(m[1], 16)), m[1]), range);
                 }
 
-                const varUsageRegEx = /\$([\p{L}_][\p{L}0-9._-]*)/gum;
-                const fullText = document.getText();
-                const variables = new Map<string, { value: string, line: number }>();
-                const declRegEx = /^\$([\p{L}_][\p{L}0-9._-]*)\s+(.+)$/gum;
-                let d;
-                while ((d = declRegEx.exec(fullText))) {
-                    variables.set(d[1], { value: d[2].trim(), line: document.positionAt(d.index).line });
-                }
-
+                const varUsageRegEx = /\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
                 while ((m = varUsageRegEx.exec(lineText)) !== null) {
                     const range = new vscode.Range(position.line, m.index, position.line, m.index + m[0].length);
                     if (range.contains(position)) {
                         const info = variables.get(m[1]);
-                        if (info && position.line > info.line) {
-                            return new vscode.Hover(getVarDetails(m[1], info.value, info.line), range);
-                        }
+                        if (info && position.line > info.line) return new vscode.Hover(getVarDetails(m[1], info), range);
                     }
                 }
                 return null;
@@ -194,20 +203,29 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    function handleSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
-        triggerUpdate();
-    }
+    const toggleJsonCommand = vscode.commands.registerCommand('lacon.toggleJsonPreview', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document.languageId !== LANG_ID) return;
 
-    function triggerUpdate() {
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(updateDecorations, 50);
-    }
+        const virtualUri = getVirtualUri(editor.document.uri);
+        const doc = await vscode.workspace.openTextDocument(virtualUri);
+        await vscode.window.showTextDocument(doc, {
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: true,
+            preview: true
+        });
+    });
 
     context.subscriptions.push(
         hoverProvider,
+        toggleJsonCommand,
         vscode.window.onDidChangeActiveTextEditor(() => triggerUpdate()),
-        vscode.workspace.onDidChangeTextDocument(() => triggerUpdate()),
-        vscode.window.onDidChangeTextEditorSelection((e) => handleSelectionChange(e))
+        vscode.workspace.onDidChangeTextDocument(e => {
+            if (e.document.languageId === LANG_ID) triggerUpdate();
+        }),
+        vscode.window.onDidChangeTextEditorSelection(e => {
+            if (e.textEditor.document.languageId === LANG_ID) triggerUpdate();
+        })
     );
 
     triggerUpdate();

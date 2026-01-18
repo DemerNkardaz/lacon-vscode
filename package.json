@@ -11,6 +11,23 @@
     "Programming Languages"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "lacon.toggleJsonPreview",
+        "title": "Toggle JSON Preview",
+        "category": "LaCoN",
+        "icon": "$(json)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "lacon.toggleJsonPreview",
+          "when": "resourceLangId == lacon",
+          "group": "navigation"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "lacon",
