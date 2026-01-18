@@ -6,6 +6,7 @@
     { "include": "#unicode_escape" },
     { "include": "#strings_quoted" },
     { "include": "#multiline_strings" },
+    { "include": "#arrays" }, 
     { "include": "#keywords_variable" },
     { "include": "#keywords_special" },
     { "include": "#keywords_bool" },
@@ -18,10 +19,54 @@
     { "include": "#assignment_key" },
     { "include": "#math_operators" },
     { "include": "#unquoted_strings" },
-    { "include": "#operators" },
-    { "include": "#arrays" }
+    { "include": "#operators" }
   ],
   "repository": {
+    "arrays": {
+      "patterns": [
+        {
+          "name": "meta.structure.array.lacon",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.brackets.lacon" }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.brackets.lacon" }
+          },
+          "patterns": [
+            { "include": "#comments" },
+            { "include": "#unicode_escape" },
+            { "include": "#strings_quoted" },
+            { "include": "#keywords_variable" },
+            { "include": "#keywords_special" },
+            { "include": "#keywords_bool" },
+            { "include": "#numeric_units" },
+            { "include": "#numbers" },
+            {
+              "name": "punctuation.separator.array.lacon",
+              "match": ","
+            },
+            {
+              "comment": "Элементы массива без кавычек (белый текст)",
+              "match": "([^\\s\\[\\]{}()=,//\"]+(?:\\\\.[^\\s\\[\\]{}()=,//\"]*)*)",
+              "captures": {
+                "1": {
+                  "name": "meta.embedded.lacon",
+                  "patterns": [
+                    { "include": "#unicode_escape" },
+                    {
+                      "name": "constant.character.escape.lacon",
+                      "match": "\\\\."
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
     "unicode_escape": {
       "name": "constant.character.escape.unicode.lacon",
       "begin": "\\\\u\\{",
@@ -448,42 +493,6 @@
               ]
             }
           }
-        }
-      ]
-    },
-    "arrays": {
-      "patterns": [
-        {
-          "name": "meta.structure.array.lacon",
-          "begin": "\\[",
-          "end": "\\]",
-          "patterns": [
-            { "include": "#comments" },
-            { "include": "#unicode_escape" },
-            { "include": "#strings_quoted" },
-            { "include": "#keywords_special" },
-            { "include": "#keywords_bool" },
-            { "include": "#numeric_units" },
-            { "include": "#numbers" },
-            {
-              "name": "punctuation.separator.array.lacon",
-              "match": ","
-            },
-            {
-              "match": "([^\\s\\[\\]{}()=,//\"]+(?:\\\\.[^\\s\\[\\]{}()=,//\"]*)*)",
-              "captures": {
-                "1": {
-                  "patterns": [
-                    { "include": "#unicode_escape" },
-                    {
-                      "name": "constant.character.escape.lacon",
-                      "match": "\\\\."
-                    }
-                  ]
-                }
-              }
-            }
-          ]
         }
       ]
     },

@@ -4,32 +4,37 @@ export function laconToJson(text: string): string {
     const stack: any[] = [result];
     const variableRegistry: Record<string, string> = {};
     
+    // Состояния для мульти-блоков
     let isMultiline = false;
     let isRawMultiline = false; 
     let multilineKey = ''; 
     let multilineContent: string[] = [];
 
+    // Новое состояние для блочных массивов
+    let isArrayMode = false;
+    let arrayKey = '';
+    let arrayContent: any[] = [];
+
     const varRegex = /^\s*\$([\w.-]+)\s+(.+)$/;
     const blockStartRegex = /^\s*([\w.-]+)\s*(?:>\s*([\w.-]+)\s*)?\{/;
     const multiKeyRegex = /^\s*\[([\w\s,-]+)\]\s*=?\s*(.+)$/;
     const multilineStartRegex = /^\s*([\w.-]+)\s*(@)?\(/;
+    // Регулярка для начала блочного массива: key [
+    const arrayStartRegex = /^\s*([\w.-]+)\s*\[\s*$/;
 
     for (let line of lines) {
         const currentLine = line.replace(/\r/g, '');
         const trimmed = currentLine.trim();
 
+        // 1. Обработка мультистрок @( )
         if (isMultiline) {
             if (trimmed === ')') {
                 const currentScope = stack[stack.length - 1];
-                
                 const finalValue = isRawMultiline 
                     ? processRawMultiline(multilineContent) 
                     : processQuotedMultiline(multilineContent);
-
                 currentScope[multilineKey] = resolveVariables(finalValue, variableRegistry);
-                
                 isMultiline = false;
-                isRawMultiline = false;
                 multilineContent = [];
                 continue;
             }
@@ -37,10 +42,35 @@ export function laconToJson(text: string): string {
             continue;
         }
 
+        // 2. Обработка блочных массивов [ ]
+        if (isArrayMode) {
+            if (trimmed === ']') {
+                const currentScope = stack[stack.length - 1];
+                currentScope[arrayKey] = arrayContent;
+                isArrayMode = false;
+                arrayContent = [];
+                continue;
+            }
+            // Убираем комментарии и запятые в конце элементов массива
+            const cleanItem = trimmed.replace(/\/\/.*$/, '').replace(/,$/, '').trim();
+            if (cleanItem) {
+                arrayContent.push(parseValue(resolveVariables(cleanItem, variableRegistry)));
+            }
+            continue;
+        }
+
         const cleanLine = trimmed.replace(/\/\/.*$/, '').trim();
         if (!cleanLine || cleanLine.startsWith('/*')) continue;
 
         let currentScope = stack[stack.length - 1];
+
+        // Детекция начала блочного массива
+        if (arrayStartRegex.test(cleanLine)) {
+            const match = cleanLine.match(arrayStartRegex)!;
+            arrayKey = match[1];
+            isArrayMode = true;
+            continue;
+        }
 
         if (multilineStartRegex.test(cleanLine)) {
             const match = cleanLine.match(multilineStartRegex)!;
@@ -88,18 +118,18 @@ export function laconToJson(text: string): string {
     return JSON.stringify(result, null, 2);
 }
 
+// Вспомогательные функции остаются без изменений (processRawMultiline, processQuotedMultiline, etc.)
+// ... (скопируйте их из предыдущей версии кода)
+
 function processRawMultiline(lines: string[]): string {
     if (lines.length === 0) return "";
-
     const nonBlankLines = lines.filter(l => l.trim().length > 0);
     const minIndent = nonBlankLines.reduce((min, line) => {
         const match = line.match(/^(\s*)/);
         const count = match ? match[1].length : 0;
         return count < min ? count : min;
     }, Infinity);
-
     const actualMin = minIndent === Infinity ? 0 : minIndent;
-
     return lines
         .map(l => l.length >= actualMin ? l.substring(actualMin) : l.trim())
         .join('\n')
@@ -112,9 +142,7 @@ function processQuotedMultiline(lines: string[]): string {
         .map(l => {
             let processed = l.trim();
             if (processed.endsWith(',')) processed = processed.slice(0, -1).trim();
-            if (processed.startsWith('"') && processed.endsWith('"')) {
-                processed = processed.slice(1, -1);
-            }
+            if (processed.startsWith('"') && processed.endsWith('"')) processed = processed.slice(1, -1);
             return processed;
         })
         .join('\n');
@@ -138,7 +166,6 @@ function processComplexLine(line: string, scope: any, vars: Record<string, strin
 function parseInlinePairs(text: string, target: any, vars: Record<string, string>) {
     const trimmedText = text.trim();
     if (!trimmedText) return;
-
     if (!trimmedText.includes('=')) {
         const firstSpaceIndex = trimmedText.search(/\s/);
         if (firstSpaceIndex === -1) {
@@ -150,7 +177,6 @@ function parseInlinePairs(text: string, target: any, vars: Record<string, string
         target[key] = parseValue(resolveVariables(value, vars));
         return;
     }
-
     const keyPositions: {key: string, start: number, valueStart: number}[] = [];
     const findKeysRegex = /(?:^|\s+)([\w.-]+)\s*=/g;
     let m;
@@ -161,31 +187,23 @@ function parseInlinePairs(text: string, target: any, vars: Record<string, string
             valueStart: (m.index ?? 0) + m[0].length
         });
     }
-
     const firstKeyStart = keyPositions[0].start;
     const leadText = trimmedText.substring(0, firstKeyStart).trim();
-    
     let currentTarget = target;
     if (leadText) {
         target[leadText] = target[leadText] || {};
         currentTarget = target[leadText];
     }
-
     for (let i = 0; i < keyPositions.length; i++) {
         const current = keyPositions[i];
         const next = keyPositions[i + 1];
-        let rawValue = next 
-            ? trimmedText.substring(current.valueStart, next.start) 
-            : trimmedText.substring(current.valueStart);
-
+        let rawValue = next ? trimmedText.substring(current.valueStart, next.start) : trimmedText.substring(current.valueStart);
         currentTarget[current.key] = parseValue(resolveVariables(rawValue.trim(), vars));
     }
 }
 
 function resolveVariables(value: string, vars: Record<string, string>): string {
-    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => {
-        return vars[varName] !== undefined ? vars[varName] : match;
-    });
+    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => vars[varName] !== undefined ? vars[varName] : match);
 }
 
 function unwrapQuotes(val: string): string {

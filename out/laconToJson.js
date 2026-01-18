@@ -6,17 +6,25 @@ function laconToJson(text) {
     const result = {};
     const stack = [result];
     const variableRegistry = {};
+    // Состояния для мульти-блоков
     let isMultiline = false;
     let isRawMultiline = false;
     let multilineKey = '';
     let multilineContent = [];
+    // Новое состояние для блочных массивов
+    let isArrayMode = false;
+    let arrayKey = '';
+    let arrayContent = [];
     const varRegex = /^\s*\$([\w.-]+)\s+(.+)$/;
     const blockStartRegex = /^\s*([\w.-]+)\s*(?:>\s*([\w.-]+)\s*)?\{/;
     const multiKeyRegex = /^\s*\[([\w\s,-]+)\]\s*=?\s*(.+)$/;
     const multilineStartRegex = /^\s*([\w.-]+)\s*(@)?\(/;
+    // Регулярка для начала блочного массива: key [
+    const arrayStartRegex = /^\s*([\w.-]+)\s*\[\s*$/;
     for (let line of lines) {
         const currentLine = line.replace(/\r/g, '');
         const trimmed = currentLine.trim();
+        // 1. Обработка мультистрок @( )
         if (isMultiline) {
             if (trimmed === ')') {
                 const currentScope = stack[stack.length - 1];
@@ -25,17 +33,39 @@ function laconToJson(text) {
                     : processQuotedMultiline(multilineContent);
                 currentScope[multilineKey] = resolveVariables(finalValue, variableRegistry);
                 isMultiline = false;
-                isRawMultiline = false;
                 multilineContent = [];
                 continue;
             }
             multilineContent.push(currentLine);
             continue;
         }
+        // 2. Обработка блочных массивов [ ]
+        if (isArrayMode) {
+            if (trimmed === ']') {
+                const currentScope = stack[stack.length - 1];
+                currentScope[arrayKey] = arrayContent;
+                isArrayMode = false;
+                arrayContent = [];
+                continue;
+            }
+            // Убираем комментарии и запятые в конце элементов массива
+            const cleanItem = trimmed.replace(/\/\/.*$/, '').replace(/,$/, '').trim();
+            if (cleanItem) {
+                arrayContent.push(parseValue(resolveVariables(cleanItem, variableRegistry)));
+            }
+            continue;
+        }
         const cleanLine = trimmed.replace(/\/\/.*$/, '').trim();
         if (!cleanLine || cleanLine.startsWith('/*'))
             continue;
         let currentScope = stack[stack.length - 1];
+        // Детекция начала блочного массива
+        if (arrayStartRegex.test(cleanLine)) {
+            const match = cleanLine.match(arrayStartRegex);
+            arrayKey = match[1];
+            isArrayMode = true;
+            continue;
+        }
         if (multilineStartRegex.test(cleanLine)) {
             const match = cleanLine.match(multilineStartRegex);
             multilineKey = match[1];
@@ -78,6 +108,8 @@ function laconToJson(text) {
     return JSON.stringify(result, null, 2);
 }
 exports.laconToJson = laconToJson;
+// Вспомогательные функции остаются без изменений (processRawMultiline, processQuotedMultiline, etc.)
+// ... (скопируйте их из предыдущей версии кода)
 function processRawMultiline(lines) {
     if (lines.length === 0)
         return "";
@@ -100,9 +132,8 @@ function processQuotedMultiline(lines) {
         let processed = l.trim();
         if (processed.endsWith(','))
             processed = processed.slice(0, -1).trim();
-        if (processed.startsWith('"') && processed.endsWith('"')) {
+        if (processed.startsWith('"') && processed.endsWith('"'))
             processed = processed.slice(1, -1);
-        }
         return processed;
     })
         .join('\n');
@@ -156,16 +187,12 @@ function parseInlinePairs(text, target, vars) {
     for (let i = 0; i < keyPositions.length; i++) {
         const current = keyPositions[i];
         const next = keyPositions[i + 1];
-        let rawValue = next
-            ? trimmedText.substring(current.valueStart, next.start)
-            : trimmedText.substring(current.valueStart);
+        let rawValue = next ? trimmedText.substring(current.valueStart, next.start) : trimmedText.substring(current.valueStart);
         currentTarget[current.key] = parseValue(resolveVariables(rawValue.trim(), vars));
     }
 }
 function resolveVariables(value, vars) {
-    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => {
-        return vars[varName] !== undefined ? vars[varName] : match;
-    });
+    return value.replace(/\$([\w.-]+)(~?)/g, (match, varName) => vars[varName] !== undefined ? vars[varName] : match);
 }
 function unwrapQuotes(val) {
     if (val.startsWith('"') && val.endsWith('"'))
