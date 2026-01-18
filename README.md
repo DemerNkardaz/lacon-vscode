@@ -2,11 +2,13 @@
 
 
 Visual Studio Code extension providing syntax highlighting for LaCoN.
+
 **LaCoN**, or “Layout Configuration Notation,” is a data representation language with a flexible syntax, created by me mostly as an experimental project.
 
 <br>
 
 Расширение для Visual Studio Code, подсвечивающее LaCoN.
+
 **LaCoN** или «Layout Configuration Notation» — язык представления данных с вариативным синтаксисом, придуманный мной скорее как эксперимент.
 
 <br>
