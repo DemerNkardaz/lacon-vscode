@@ -152,14 +152,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
         let m;
-        let shouldShowHover = false;
         while ((m = unicodeRegEx.exec(text))) {
             if (isInEmbeddedLanguage(m.index, embeddedRanges)) continue;
             const startPos = editor.document.positionAt(m.index);
             const range = new vscode.Range(startPos, editor.document.positionAt(m.index + m[0].length));
-            if (activeLines.has(startPos.line)) {
-                shouldShowHover = true;
-            } else {
+            
+            if (!activeLines.has(startPos.line)) {
                 try {
                     const char = String.fromCodePoint(parseInt(m[1], 16));
                     decorations.push({
@@ -187,9 +185,7 @@ export async function activate(context: vscode.ExtensionContext) {
             const range = new vscode.Range(startPos, editor.document.positionAt(m.index + m[0].length));
             const varInfo = variables.get(varName);
 
-            if (activeLines.has(startPos.line)) {
-                shouldShowHover = true;
-            } else if (varInfo && startPos.line > varInfo.line) {
+            if (!activeLines.has(startPos.line) && varInfo && startPos.line > varInfo.line) {
                 const displayValue = replaceUnicodeSequences(varInfo.value);
                 const hasCJK = /[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/.test(displayValue);
 
@@ -211,18 +207,18 @@ export async function activate(context: vscode.ExtensionContext) {
         }
 
         editor.setDecorations(concealDecorationType, decorations);
-        if (shouldShowHover) {
-            Promise.resolve().then(() => vscode.commands.executeCommand('editor.action.showHover'));
-        }
     }
 
-    function triggerUpdate() {
+    function triggerUpdate(onlyCursorMove: boolean = false) {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => {
             updateDecorations();
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === LANG_ID) {
-                jsonProvider.update(getVirtualUri(editor.document.uri));
+            
+            if (!onlyCursorMove) {
+                const editor = vscode.window.activeTextEditor;
+                if (editor && editor.document.languageId === LANG_ID) {
+                    jsonProvider.update(getVirtualUri(editor.document.uri));
+                }
             }
         }, 50);
     }
@@ -280,10 +276,10 @@ export async function activate(context: vscode.ExtensionContext) {
         toggleJsonCommand,
         vscode.window.onDidChangeActiveTextEditor(() => triggerUpdate()),
         vscode.workspace.onDidChangeTextDocument(e => {
-            if (e.document.languageId === LANG_ID) triggerUpdate();
+            if (e.document.languageId === LANG_ID) triggerUpdate(false);
         }),
         vscode.window.onDidChangeTextEditorSelection(e => {
-            if (e.textEditor.document.languageId === LANG_ID) triggerUpdate();
+            if (e.textEditor.document.languageId === LANG_ID) triggerUpdate(true);
         })
     );
 
