@@ -28,12 +28,12 @@ export function laconToJson(text: string): string {
         if (isMultiline) {
             if (trimmed === ')') {
                 const currentScope = stack[stack.length - 1];
-                const finalValue = isRawMultiline 
+                const finalRawValue = isRawMultiline 
                     ? processRawMultiline(multilineContent) 
                     : processQuotedMultiline(multilineContent);
                 
-                const resolved = resolveVariables(finalValue, variableRegistry);
-                const processedValue = isRawMultiline ? resolved : unescapeString(resolved);
+                let resolved = resolveVariables(finalRawValue, variableRegistry);
+                const processedValue = unescapeString(resolved);
 
                 if (typeof currentScope[multilineKey] === 'string' && currentScope[multilineKey] !== "") {
                     currentScope[multilineKey] += '\n' + processedValue;
@@ -154,8 +154,13 @@ export function laconToJson(text: string): string {
 }
 
 function unescapeString(str: string): string {
+    if (!str) return str;
     return str.replace(/\\(n|r|t|b|f|"|\\|\$|u\{([0-9A-Fa-f]+)\})/g, (match, type, unicodeCode) => {
-        switch (type[0]) {
+        if (type.startsWith('u{')) {
+            const codePoint = parseInt(unicodeCode, 16);
+            return String.fromCodePoint(codePoint);
+        }
+        switch (type) {
             case 'n': return '\n';
             case 'r': return '\r';
             case 't': return '\t';
@@ -164,9 +169,6 @@ function unescapeString(str: string): string {
             case '"': return '"';
             case '\\': return '\\';
             case '$': return '$';
-            case 'u':
-                const codePoint = parseInt(unicodeCode, 16);
-                return String.fromCodePoint(codePoint);
             default: return match;
         }
     });
@@ -398,9 +400,10 @@ function processQuotedMultiline(lines: string[]): string {
 }
 
 function resolveVariables(value: string, vars: Record<string, string>): string {
-    return value.replace(/(?<!\\)\$([\p{L}\d._-]+)(~?)/gu, (match, varName) => 
-        vars[varName] !== undefined ? vars[varName] : match
-    );
+    return value.replace(/(?<!\\)\$([\p{L}\d._-]+)(~?)/gu, (match, varName, tilde) => {
+        const val = vars[varName] !== undefined ? vars[varName] : match;
+        return tilde ? val : val;
+    }).replace(/~/g, '');
 }
 
 function unwrapQuotes(val: string): string {

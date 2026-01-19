@@ -13,11 +13,25 @@ Visual Studio Code extension providing syntax highlighting for LaCoN.
 
 <br>
 
+Repository with lacon files examples: [[GitHub] LaCoN Examples](https://github.com/DemerNkardaz/lacon-examples)
+
+
 ![LaCoN Syntax Highlight](https://raw.githubusercontent.com/DemerNkardaz/lacon-vscode/refs/heads/master/image/README/1768745138507.png)
 
 <br>
 
-![LaCoN Syntax Highlight](https://raw.githubusercontent.com/DemerNkardaz/lacon-vscode/refs/heads/master/image/README/1768747249414.png)
+![LaCoN Syntax](https://raw.githubusercontent.com/DemerNkardaz/lacon-vscode/refs/heads/master/image/README/1768747249414.png)
+
+<br>
+
+![min.LaCoN](https://raw.githubusercontent.com/DemerNkardaz/lacon-vscode/refs/heads/master/image/README/1768793416099.png)
+
+<br>
+
+![LaCoN example with JSON preview](https://raw.githubusercontent.com/DemerNkardaz/lacon-vscode/refs/heads/master/image/README/1768793861942.png)
+
+[(AI generated test file)](https://github.com/DemerNkardaz/lacon-examples/blob/main/examples/ai-generated-var-test.lacon)
+
 
 <br>
 
@@ -35,6 +49,10 @@ $old-english-mingling ġebland
 
 old-english-snowstorm $old-english-snow~$old-english-mingling
 
+$kanji-minamoto 源
+$kanji-yoshitsune 義経
+
+minamoto-no-yoshitsune $kanji-minamoto~$kanji-yoshitsune
 
 // Simple string: quotes are optional but may be required in certain cases
 string-1 Text
@@ -44,6 +62,7 @@ string-2 "Text"
 escaped-string "\"Quotes\"\n\t\b\r\f\\"
 unicode-characters-1 Kalium-40 (\u{2074}\u{2070}K)
 unicode-characters-2 [\u{10338}] Gothic Thiuth
+unicode-characters-3 [\u{10335}] Gothic Qairthra
 
 // Use \$ to insert a literal “$” and prevent it from being parsed as a variable.
 escape-variable \$old-english-snow
