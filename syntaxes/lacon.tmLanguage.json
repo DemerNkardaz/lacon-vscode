@@ -2,9 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "LaCoN",
   "patterns": [
+    { "include": "#unicode_escape" },
     { "include": "#comments" },
     { "include": "#escapes" },
-    { "include": "#unicode_escape" },
     { "include": "#multiple_keys" },
     { "include": "#strings_quoted" },
     { "include": "#multiline_strings" },
@@ -23,6 +23,29 @@
     { "include": "#operators" }
   ],
   "repository": {
+    "unicode_escape": {
+      "comment": "Высокий приоритет для корректной окраски \\u{...}",
+      "patterns": [
+        {
+          "name": "constant.character.escape.unicode.lacon",
+          "begin": "(\\\\u)(\\{)",
+          "beginCaptures": {
+            "1": { "name": "constant.character.escape.lacon" },
+            "2": { "name": "punctuation.section.brackets.lacon" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.brackets.lacon" }
+          },
+          "patterns": [
+            {
+              "name": "constant.numeric.hex.lacon",
+              "match": "[0-9a-fA-F]+"
+            }
+          ]
+        }
+      ]
+    },
     "arrays": {
       "patterns": [
         {
@@ -36,8 +59,8 @@
             "0": { "name": "punctuation.section.brackets.lacon" }
           },
           "patterns": [
-            { "include": "#comments" },
             { "include": "#unicode_escape" },
+            { "include": "#comments" },
             { "include": "#strings_quoted" },
             { "include": "#keywords_variable" },
             { "include": "#keywords_special" },
@@ -50,17 +73,14 @@
               "match": ","
             },
             {
-              "comment": "Элементы массива без кавычек (белый текст)",
+              "comment": "Элементы массива без кавычек",
               "match": "([^\\s\\[\\]{}()=,//\"]+(?:\\\\.[^\\s\\[\\]{}()=,//\"]*)*)",
               "captures": {
                 "1": {
                   "name": "meta.embedded.lacon",
                   "patterns": [
                     { "include": "#unicode_escape" },
-                    {
-                      "name": "constant.character.escape.lacon",
-                      "match": "\\\\."
-                    }
+                    { "include": "#escapes" }
                   ]
                 }
               }
@@ -77,23 +97,6 @@
         }
       ]
     },
-    "unicode_escape": {
-      "name": "constant.character.escape.unicode.lacon",
-      "begin": "\\\\u\\{",
-      "beginCaptures": {
-        "0": { "name": "punctuation.definition.escape.begin.lacon" }
-      },
-      "end": "\\}",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.escape.end.lacon" }
-      },
-      "patterns": [
-        {
-          "name": "constant.numeric.hex.lacon",
-          "match": "[0-9a-fA-F]+"
-        }
-      ]
-    },
     "main_keys": {
       "patterns": [
         {
@@ -105,7 +108,6 @@
     "multiple_keys": {
       "patterns": [
         {
-          "comment": "Multiple keys with assignment [key, key] = (точное совпадение)",
           "begin": "\\[(?=[^\\]]*\\]\\s*=)",
           "end": "\\]",
           "beginCaptures": {
@@ -126,7 +128,6 @@
           ]
         },
         {
-          "comment": "Multiple keys with space [key, key] value (только если это не значение ключа)",
           "begin": "(?<!=)\\s*\\[(?=[^\\]]*\\]\\s+[^=,])",
           "end": "\\]",
           "beginCaptures": {
@@ -163,7 +164,6 @@
     "assignment_key": {
         "patterns": [
           {
-            "comment": "Standard key assignment or key before multi-key block",
             "name": "entity.other.attribute-name.lacon",
             "match": "\\b[\\p{L}0-9_-]+(?=\\s*=|\\s+\\[)"
           }
@@ -175,192 +175,25 @@
         {
           "name": "comment.block.documentation.lacon",
           "begin": "/\\*\\*",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" }
-          },
           "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
           "patterns": [
             {
               "name": "storage.type.class.jsdoc.lacon",
               "match": "@(param|returns?|type|description|example|author|version|since|todo)\\b"
-            },
-            {
-              "name": "variable.other.jsdoc.lacon",
-              "match": "(?<=@param\\s+)[\\p{L}_][\\p{L}0-9_-]*"
             }
           ]
         },
-        { 
-          "name": "comment.line.double-slash.lacon", 
-          "match": "//.*$" 
-        },
-        { 
-          "name": "comment.block.lacon", 
-          "begin": "/\\*", 
-          "end": "\\*/" 
-        }
+        { "name": "comment.line.double-slash.lacon", "match": "//.*$" },
+        { "name": "comment.block.lacon", "begin": "/\\*", "end": "\\*/" }
       ]
     },
     "comment_embedded": {
       "patterns": [
         {
-          "begin": "/\\*\\*\\s*(json|JSON)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
+          "begin": "/\\*\\*\\s*(json|javascript|js|typescript|ts|python|py|css|html|xml|yaml|yml|sql|markdown|md|regex|regexp|shell|bash|sh)\\s*$",
+          "beginCaptures": { "1": { "name": "storage.type.class.jsdoc.lacon" } },
           "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.json",
-          "patterns": [{ "include": "source.json" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(javascript|js|JavaScript|JS)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.javascript",
-          "patterns": [{ "include": "source.js" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(typescript|ts|TypeScript|TS)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.typescript",
-          "patterns": [{ "include": "source.ts" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(python|py|Python)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.python",
-          "patterns": [{ "include": "source.python" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(css|CSS)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.css",
-          "patterns": [{ "include": "source.css" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(html|HTML)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.html",
-          "patterns": [{ "include": "text.html.basic" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(xml|XML)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.xml",
-          "patterns": [{ "include": "text.xml" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(yaml|yml|YAML)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.yaml",
-          "patterns": [{ "include": "source.yaml" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(sql|SQL)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.sql",
-          "patterns": [{ "include": "source.sql" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(markdown|md|Markdown)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.markdown",
-          "patterns": [{ "include": "text.html.markdown" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(regex|regexp|RegEx)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.regex",
-          "patterns": [{ "include": "source.regexp" }]
-        },
-        {
-          "begin": "/\\*\\*\\s*(shell|bash|sh)\\s*$",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.lacon" },
-            "1": { "name": "storage.type.class.jsdoc.lacon" }
-          },
-          "end": "\\*/",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.lacon" }
-          },
-          "contentName": "meta.embedded.block.shell",
-          "patterns": [{ "include": "source.shell" }]
+          "contentName": "meta.embedded.block.$1"
         }
       ]
     },
@@ -374,18 +207,12 @@
     },
     "keywords_special": {
       "patterns": [
-        { 
-          "name": "support.type.lacon", 
-          "match": "\\b(none|auto)\\b" 
-        }
+        { "name": "support.type.lacon", "match": "\\b(none|auto)\\b" }
       ]
     },
     "keywords_bool": {
       "patterns": [
-        { 
-          "name": "constant.language.boolean.lacon", 
-          "match": "\\b(true|false|value)\\b" 
-        }
+        { "name": "constant.language.boolean.lacon", "match": "\\b(true|false|value)\\b" }
       ]
     },
     "math_operators": {
@@ -406,18 +233,12 @@
     },
     "numbers": {
       "patterns": [
-        { 
-          "name": "constant.numeric.lacon", 
-          "match": "\\b-?\\d+(\\.\\d+)?\\b" 
-        }
+        { "name": "constant.numeric.lacon", "match": "\\b-?\\d+(\\.\\d+)?\\b" }
       ]
     },
     "hex_numbers": {
       "patterns": [
-        { 
-          "name": "constant.numeric.lacon", 
-          "match": "\\b0[xX][0-9a-fA-F]+\\b" 
-        }
+        { "name": "constant.numeric.lacon", "match": "\\b0[xX][0-9a-fA-F]+\\b" }
       ]
     },
     "strings_quoted": {
@@ -427,12 +248,9 @@
           "begin": "\"",
           "end": "\"",
           "patterns": [
-            { "include": "#keywords_variable" },
             { "include": "#unicode_escape" },
-            { 
-              "name": "constant.character.escape.lacon", 
-              "match": "\\\\." 
-            }
+            { "include": "#keywords_variable" },
+            { "include": "#escapes" }
           ]
         }
       ]
@@ -440,40 +258,28 @@
     "multiline_strings": {
       "patterns": [
         {
-          "comment": "Свободные строки @( ... )",
           "begin": "(@)(\\()",
           "beginCaptures": {
             "1": { "name": "punctuation.section.brackets.lacon" },
             "2": { "name": "punctuation.section.brackets.lacon" }
           },
           "end": "(\\))",
-          "endCaptures": {
-            "1": { "name": "punctuation.section.brackets.lacon" }
-          },
+          "endCaptures": { "1": { "name": "punctuation.section.brackets.lacon" } },
           "patterns": [
-            { "include": "#keywords_variable" },
             { "include": "#unicode_escape" },
-            {
-              "comment": "Текст без цвета строк (белый)",
-              "name": "meta.embedded.lacon", 
-              "match": "[^)$]+"
-            }
+            { "include": "#keywords_variable" },
+            { "name": "meta.embedded.lacon", "match": "[^)$]+" }
           ]
         },
         {
-          "comment": "Строгие строки ( ... )",
           "begin": "(\\()",
-          "beginCaptures": {
-            "1": { "name": "punctuation.section.brackets.lacon" }
-          },
+          "beginCaptures": { "1": { "name": "punctuation.section.brackets.lacon" } },
           "end": "(\\))",
-          "endCaptures": {
-            "1": { "name": "punctuation.section.brackets.lacon" }
-          },
+          "endCaptures": { "1": { "name": "punctuation.section.brackets.lacon" } },
           "patterns": [
+            { "include": "#unicode_escape" },
             { "include": "#strings_quoted" },
             { "include": "#keywords_variable" },
-            { "include": "#unicode_escape" },
             { "name": "punctuation.separator.lacon", "match": "," }
           ]
         }
@@ -488,19 +294,19 @@
             "1": {
               "patterns": [
                 { "include": "#unicode_escape" },
-                { "name": "constant.character.escape.lacon", "match": "\\\\." }
+                { "include": "#escapes" }
               ]
             }
           }
         },
         {
-          "comment": "Standalone values/strings",
+          "comment": "Standalone values",
           "match": "(?<=^|\\s)(?![a-zA-Z0-9_-]+=)([^\\s\\[\\]{}()=,//\"\\$]+(?:\\\\.[^\\s\\[\\]{}()=,//\"\\$]*)*)",
           "captures": {
             "1": {
               "patterns": [
                 { "include": "#unicode_escape" },
-                { "name": "constant.character.escape.lacon", "match": "\\\\." }
+                { "include": "#escapes" }
               ]
             }
           }
@@ -509,14 +315,8 @@
     },
     "operators": {
       "patterns": [
-        { 
-          "name": "keyword.operator.assignment.lacon", 
-          "match": "=" 
-        },
-        { 
-          "name": "punctuation.section.brackets.lacon", 
-          "match": "[\\[\\]{}()]" 
-        }
+        { "name": "keyword.operator.assignment.lacon", "match": "=" },
+        { "name": "punctuation.section.brackets.lacon", "match": "[\\[\\]{}()]" }
       ]
     }
   },

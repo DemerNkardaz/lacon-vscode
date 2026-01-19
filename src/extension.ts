@@ -42,12 +42,18 @@ export async function activate(context: vscode.ExtensionContext) {
         return vscode.Uri.parse(`${LaconJsonProvider.scheme}:Preview.json?${encodeURIComponent(laconUri.toString())}`);
     }
 
-    function getCharDetails(char: string, hex: string) {
-        const codePoint = char.codePointAt(0) || 0;
-        const md = new vscode.MarkdownString();
-        md.isTrusted = true;
-        md.supportHtml = true;
+    function replaceUnicodeSequences(text: string): string {
+        return text.replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex) => {
+            try {
+                return String.fromCodePoint(parseInt(hex, 16));
+            } catch {
+                return _;
+            }
+        });
+    }
 
+    function getCharTableMarkdown(char: string, hex: string): string {
+        const codePoint = char.codePointAt(0) || 0;
         let category = "Unknown";
         if (/\p{L}/u.test(char)) category = l10n.t("unicode.category.letter");
         else if (/\p{N}/u.test(char)) category = l10n.t("unicode.category.number");
@@ -55,14 +61,23 @@ export async function activate(context: vscode.ExtensionContext) {
         else if (/\p{S}/u.test(char)) category = l10n.t("unicode.category.symbol");
         else if (/\p{Z}/u.test(char)) category = l10n.t("unicode.category.separator");
 
+        let table = `| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`;
+        table += `| :--- | :--- |\n`;
+        table += `| **${l10n.t("unicode.category")}** | ${category} |\n`;
+        table += `| **Dec** | ${codePoint} |\n`;
+        table += `| **UTF-16** | \`\\u${codePoint.toString(16).padStart(4, '0')}\` |\n`;
+        table += `| **HTML** | \`&#${codePoint};\` |\n`;
+        return table;
+    }
+
+    function getCharDetails(char: string, hex: string) {
+        const md = new vscode.MarkdownString();
+        md.isTrusted = true;
+        md.supportHtml = true;
+
         md.appendMarkdown(`${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n---\n\n`);
         md.appendMarkdown(`<span style="font-size:40px;">${char}</span>\n\n`);
-        md.appendMarkdown(`| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`);
-        md.appendMarkdown(`| :--- | :--- |\n`);
-        md.appendMarkdown(`| **${l10n.t("unicode.category")}** | ${category} |\n`);
-        md.appendMarkdown(`| **Dec** | ${codePoint} |\n`);
-        md.appendMarkdown(`| **UTF-16** | \`\\u${codePoint.toString(16).padStart(4, '0')}\` |\n`);
-        md.appendMarkdown(`| **HTML** | \`&#${codePoint};\` |\n`);
+        md.appendMarkdown(getCharTableMarkdown(char, hex));
 
         return md;
     }
@@ -70,12 +85,31 @@ export async function activate(context: vscode.ExtensionContext) {
     function getVarDetails(name: string, info: { value: string, line: number, doc?: string }) {
         const md = new vscode.MarkdownString();
         md.isTrusted = true;
+        md.supportHtml = true;
+
+        const displayValue = replaceUnicodeSequences(info.value);
         md.appendMarkdown(`${l10n.t("var.title")}$${name}\n\n---\n\n`);
+        
         if (info.doc) md.appendMarkdown(`${info.doc}\n\n---\n\n`);
+        
         md.appendMarkdown(`| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`);
         md.appendMarkdown(`| :--- | :--- |\n`);
-        md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${info.value}\` |\n`);
-        md.appendMarkdown(`| **${l10n.t("var.defined")}** | ${l10n.t("var.line")} ${info.line + 1} |\n`);
+        md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${displayValue}\` |\n`);
+        md.appendMarkdown(`| **${l10n.t("var.defined")}** | ${l10n.t("var.line")} ${info.line + 1} |\n\n`);
+
+        const trimmedValue = info.value.replace(/^["']|["']$/g, '').trim();
+        const unicodeMatch = trimmedValue.match(/^\\u\{([0-9a-fA-F]+)\}$/);
+
+        if (unicodeMatch) {
+            const hex = unicodeMatch[1];
+            const char = String.fromCodePoint(parseInt(hex, 16));
+            
+            md.appendMarkdown(`---\n\n`);
+            md.appendMarkdown(`### ${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n`);
+            md.appendMarkdown(`<span style="font-size:30px;">${char}</span>\n\n`);
+            md.appendMarkdown(getCharTableMarkdown(char, hex));
+        }
+
         return md;
     }
 
@@ -93,7 +127,6 @@ export async function activate(context: vscode.ExtensionContext) {
         return ranges.some(range => position >= range.start && position < range.end);
     }
 
-
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.languageId !== LANG_ID) return;
@@ -106,7 +139,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         variables.clear();
 
-        const combinedRegex = /(?:\/\*\*([\s\S]*?)\*\/[\r\n\s]*)?^(?<!\\)\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)\s+(.+)$/gum;
+        const combinedRegex = /(?:\/\*\*([\s\S]*?)\*\/[\r\n\s]*)?^(?<!\\)\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(?:\s*=\s*|\s+)(.+)$/gum;
         let match;
         while ((match = combinedRegex.exec(text))) {
             const rawDoc = match[1];
@@ -131,9 +164,18 @@ export async function activate(context: vscode.ExtensionContext) {
                     const char = String.fromCodePoint(parseInt(m[1], 16));
                     decorations.push({
                         range: range,
-                        renderOptions: { before: { contentText: char, color: new vscode.ThemeColor('charts.blue'), backgroundColor: 'rgba(0, 122, 204, 0.1)' } }
+                        renderOptions: {
+                            before: {
+                                contentText: char,
+                                color: '#eae059',
+                                textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
+                                backgroundColor: 'rgba(234, 224, 89, 0.15)',
+                                border: '1px solid #eae059',
+                                margin: '0 2px',
+                            }
+                        }
                     });
-                } catch {}
+                } catch { }
             }
         }
 
@@ -141,7 +183,6 @@ export async function activate(context: vscode.ExtensionContext) {
         while ((m = varUsageRegEx.exec(text))) {
             if (isInEmbeddedLanguage(m.index, embeddedRanges)) continue;
             const varName = m[1];
-            const hasGlue = m[2] === '~';
             const startPos = editor.document.positionAt(m.index);
             const range = new vscode.Range(startPos, editor.document.positionAt(m.index + m[0].length));
             const varInfo = variables.get(varName);
@@ -149,9 +190,22 @@ export async function activate(context: vscode.ExtensionContext) {
             if (activeLines.has(startPos.line)) {
                 shouldShowHover = true;
             } else if (varInfo && startPos.line > varInfo.line) {
+                const displayValue = replaceUnicodeSequences(varInfo.value);
+                const hasCJK = /[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/.test(displayValue);
+
                 decorations.push({
                     range: range,
-                    renderOptions: { before: { contentText: varInfo.value, color: new vscode.ThemeColor('symbolIcon.variableForeground'), fontStyle: 'italic', backgroundColor: 'rgba(128, 128, 128, 0.1)' } }
+                    renderOptions: {
+                        before: {
+                            contentText: displayValue,
+                            color: '#6a9fff',
+                            fontStyle: hasCJK ? 'normal' : 'italic',
+                            textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
+                            backgroundColor: 'rgba(89, 147, 234, 0.15)',
+                            border: '1px solid #6a9fff',
+                            margin: '0 2px',
+                        }
+                    }
                 });
             }
         }
@@ -184,10 +238,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
                 const lineText = document.lineAt(position.line).text;
                 let m;
+                
                 const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
                 while ((m = unicodeRegEx.exec(lineText)) !== null) {
                     const range = new vscode.Range(position.line, m.index, position.line, m.index + m[0].length);
-                    if (range.contains(position)) return new vscode.Hover(getCharDetails(String.fromCodePoint(parseInt(m[1], 16)), m[1]), range);
+                    if (range.contains(position)) {
+                        return new vscode.Hover(getCharDetails(String.fromCodePoint(parseInt(m[1], 16)), m[1]), range);
+                    }
                 }
 
                 const varUsageRegEx = /\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
@@ -195,7 +252,9 @@ export async function activate(context: vscode.ExtensionContext) {
                     const range = new vscode.Range(position.line, m.index, position.line, m.index + m[0].length);
                     if (range.contains(position)) {
                         const info = variables.get(m[1]);
-                        if (info && position.line > info.line) return new vscode.Hover(getVarDetails(m[1], info), range);
+                        if (info && position.line > info.line) {
+                            return new vscode.Hover(getVarDetails(m[1], info), range);
+                        }
                     }
                 }
                 return null;

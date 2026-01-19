@@ -14,11 +14,11 @@ export function laconToJson(text: string): string {
     let arrayKey = '';
     let arrayContent: any[] = [];
 
-    const varRegex = /^\s*(?<!\\)\$([\w.-]+)\s+(.+)$/;
-    const blockStartRegex = /^\s*([\w.-]+)\s*(?:>\s*([\w.-]+)\s*)?\{/;
-    const multiKeyRegex = /^\s*\[([\w\s,*-]+)\]\s*=?\s*(.+)$/;
-    const multilineStartRegex = /^\s*([\w.-]+)\s*(@)?\(\s*$/;
-    const arrayStartRegex = /^\s*([\w.-]+)\s*\[\s*$/;
+    const varRegex = /^\s*(?<!\\)\$([\p{L}\d._-]+)\s*=?\s*(.+)$/u;
+    const blockStartRegex = /^\s*([\p{L}\d._-]+)\s*(?:>\s*([\p{L}\d._-]+)\s*)?=?\s*\{/u;
+    const multiKeyRegex = /^\s*\[([\p{L}\d\s,.*_-]+)\]\s*=?\s*(.+)$/u;
+    const multilineStartRegex = /^\s*([\p{L}\d._-]+)\s*=?\s*(@?\()\s*$/u;
+    const arrayStartRegex = /^\s*([\p{L}\d._-]+)\s*=?\s*\[\s*$/u;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -88,8 +88,8 @@ export function laconToJson(text: string): string {
         }
 
         if (varRegex.test(cleanLine)) {
-            const [, name, value] = cleanLine.match(varRegex)!;
-            variableRegistry[name] = unescapeString(unwrapQuotes(value.trim()));
+            const match = cleanLine.match(varRegex)!;
+            variableRegistry[match[1]] = unescapeString(unwrapQuotes(match[2].trim()));
             continue; 
         }
 
@@ -103,7 +103,7 @@ export function laconToJson(text: string): string {
         if (multilineStartRegex.test(cleanLine)) {
             const match = cleanLine.match(multilineStartRegex)!;
             multilineKey = match[1];
-            isRawMultiline = match[2] === '@';
+            isRawMultiline = match[2].startsWith('@');
             isMultiline = true;
             continue;
         }
@@ -220,7 +220,7 @@ function processComplexLine(line: string, scope: any, vars: Record<string, strin
         }
 
         const lastPart = parts[parts.length - 1];
-        const isStructureInit = lastPart.endsWith('{}') || lastPart.endsWith('[]') || lastPart.endsWith('()') || lastPart.endsWith('@()');
+        const isStructureInit = lastPart.endsWith('{}') || lastPart.endsWith('[]') || lastPart.endsWith('()') || lastPart.endsWith('@()') || lastPart.includes('={}') || lastPart.includes('=[]');
         const isAssignment = !isStructureInit && (lastPart.includes('=') || lastPart.includes(' '));
         
         parseInlinePairs(lastPart, current, vars, isAssignment);
@@ -254,22 +254,24 @@ function parseInlinePairs(text: string, target: any, vars: Record<string, string
     if (!trimmedText) return;
 
     if (trimmedText.endsWith('{}')) {
-        target[trimmedText.replace('{}', '').trim()] = {};
+        const key = trimmedText.replace(/=?\s*\{\}/, '').trim();
+        target[key] = {};
         return;
     }
     if (trimmedText.endsWith('[]')) {
-        target[trimmedText.replace('[]', '').trim()] = [];
+        const key = trimmedText.replace(/=?\s*\[\]/, '').trim();
+        target[key] = [];
         return;
     }
     if (trimmedText.endsWith('@()') || trimmedText.endsWith('()')) {
-        const key = trimmedText.replace(/@?\(\)/, '').trim();
+        const key = trimmedText.replace(/=?\s*@?\(\)/, '').trim();
         target[key] = "";
         return;
     }
 
     if (trimmedText.includes('=')) {
         const keyPositions: {key: string, start: number, valueStart: number, isMulti: boolean}[] = [];
-        const findKeysRegex = /(?:^|\s+)(?:([\w.-]+)|\[([\w\s,*-]+)\])\s*=/g;
+        const findKeysRegex = /(?:^|\s+)(?:([\p{L}\d._-]+)|\[([\p{L}\d\s,.*_-]+)\])\s*=/gu;
         let m;
         while ((m = findKeysRegex.exec(trimmedText)) !== null) {
             const prefix = trimmedText.substring(0, m.index);
@@ -396,7 +398,7 @@ function processQuotedMultiline(lines: string[]): string {
 }
 
 function resolveVariables(value: string, vars: Record<string, string>): string {
-    return value.replace(/(?<!\\)\$([\w.-]+)(~?)/g, (match, varName) => 
+    return value.replace(/(?<!\\)\$([\p{L}\d._-]+)(~?)/gu, (match, varName) => 
         vars[varName] !== undefined ? vars[varName] : match
     );
 }
