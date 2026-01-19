@@ -349,7 +349,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
     const trimmedText = text.trim();
     if (!trimmedText)
         return;
-    // 1. Обработка @import
     if (trimmedText.startsWith('@import')) {
         const imported = parseValue(trimmedText, vars, currentDir, importStack);
         if (imported && typeof imported === 'object' && imported.__lacon_spread__) {
@@ -360,7 +359,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
         }
         return;
     }
-    // 2. Обработка пустых структур {} и []
     if (trimmedText.endsWith('{}')) {
         const key = trimmedText.replace(/=?\s*\{\}/, '').trim();
         target[key] = {};
@@ -371,7 +369,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
         target[key] = [];
         return;
     }
-    // 3. Обработка явных присваиваний через "=" (Short dictionary и вложенность)
     if (trimmedText.includes('=')) {
         const keyPositions = [];
         const findKeysRegex = /(?:^|\s+)([\p{L}\d._-]+|\[[\p{L}\d\s,.*_-]+\]|@import(?:\.\.\.)?)\s*=/gu;
@@ -390,8 +387,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
             }
         }
         if (keyPositions.length > 0) {
-            // Если перед первым ключом с "=" есть текст (например, "short-dictionary key1=val")
-            // Мы создаем вложенный объект для этого имени.
             const firstKeyStart = keyPositions[0].start;
             const prefix = trimmedText.substring(0, firstKeyStart).trim();
             let currentTarget = target;
@@ -431,7 +426,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
             return;
         }
     }
-    // 4. Логика для "Key Value" (Обычные строки и массивы)
     const firstSpaceIndex = trimmedText.search(/\s/);
     if (firstSpaceIndex === -1) {
         if (!overwrite && typeof target[trimmedText] === 'object' && target[trimmedText] !== null)
@@ -441,8 +435,6 @@ function parseInlinePairs(text, target, vars, overwrite, currentDir, importStack
     else {
         const key = trimmedText.substring(0, firstSpaceIndex);
         const remaining = trimmedText.substring(firstSpaceIndex).trim();
-        // Проверяем: если в значении нет "=", значит это просто строка или массив.
-        // Мы НЕ идем в рекурсию parseInlinePairs, а сразу вызываем parseValue.
         if (remaining.includes('=') && !remaining.startsWith('[') && !remaining.startsWith('"')) {
             ensureObject(target, key);
             parseInlinePairs(remaining, target[key], vars, overwrite, currentDir, importStack);

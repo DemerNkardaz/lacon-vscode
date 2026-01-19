@@ -219,11 +219,12 @@ export async function activate(context: vscode.ExtensionContext) {
         if (previewTimeout) clearTimeout(previewTimeout);
         
         previewTimeout = setTimeout(() => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === LANG_ID) {
-                jsonProvider.update(getVirtualUri(editor.document.uri));
-            }
-        }, 10);
+            vscode.workspace.textDocuments.forEach(doc => {
+                if (doc.uri.scheme === LaconJsonProvider.scheme) {
+                    jsonProvider.update(doc.uri);
+                }
+            });
+        }, 50);
     }
 
     function triggerUpdate(onlyCursorMove: boolean = false) {
@@ -292,7 +293,9 @@ export async function activate(context: vscode.ExtensionContext) {
         toggleJsonCommand,
         vscode.window.onDidChangeActiveTextEditor(() => triggerUpdate()),
         vscode.workspace.onDidChangeTextDocument(e => {
-            if (e.document.languageId === LANG_ID) triggerUpdate(false);
+            if (e.document.languageId === LANG_ID) {
+                triggerUpdate(false);
+            }
         }),
         vscode.window.onDidChangeTextEditorSelection(e => {
             if (e.textEditor.document.languageId === LANG_ID) triggerUpdate(true);

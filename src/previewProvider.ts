@@ -13,7 +13,6 @@ export class LaconJsonProvider implements vscode.TextDocumentContentProvider {
     }
 
     provideTextDocumentContent(uri: vscode.Uri): string {
-        // Извлекаем URI исходного .lacon файла из параметров запроса
         const sourceUriString = decodeURIComponent(uri.query);
         const sourceUri = vscode.Uri.parse(sourceUriString);
         
@@ -21,7 +20,7 @@ export class LaconJsonProvider implements vscode.TextDocumentContentProvider {
         
         if (!document) {
             return JSON.stringify({ 
-                error: "Source document not found",
+                error: "Source document not found in workspace",
                 uri: sourceUri.toString() 
             }, null, 2);
         }

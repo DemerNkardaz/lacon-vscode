@@ -14,13 +14,12 @@ class LaconJsonProvider {
         });
     }
     provideTextDocumentContent(uri) {
-        // Извлекаем URI исходного .lacon файла из параметров запроса
         const sourceUriString = decodeURIComponent(uri.query);
         const sourceUri = vscode.Uri.parse(sourceUriString);
         const document = vscode.workspace.textDocuments.find(d => d.uri.toString() === sourceUri.toString());
         if (!document) {
             return JSON.stringify({
-                error: "Source document not found",
+                error: "Source document not found in workspace",
                 uri: sourceUri.toString()
             }, null, 2);
         }
