@@ -8,7 +8,7 @@
     "unicode.category.punctuation": "Punctuation",
     "unicode.category.symbol": "Symbol",
     "unicode.category.separator": "Separator",
-    "var.title": "###  Variable: ",
+    "var.title": "### Variable: ",
     "var.current": "Current Value",
     "var.defined": "Defined at",
     "var.line": "Line"

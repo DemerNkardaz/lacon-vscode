@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
         md.supportHtml = true;
 
         md.appendMarkdown(`${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n---\n\n`);
-        md.appendMarkdown(`<span style="font-size:40px;">${char}</span>\n\n`);
+        md.appendMarkdown(`# ${char}\n\n`);
         md.appendMarkdown(getCharTableMarkdown(char, hex));
 
         return md;
@@ -105,8 +105,8 @@ export async function activate(context: vscode.ExtensionContext) {
             const char = String.fromCodePoint(parseInt(hex, 16));
             
             md.appendMarkdown(`---\n\n`);
-            md.appendMarkdown(`### ${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n`);
-            md.appendMarkdown(`<span style="font-size:30px;">${char}</span>\n\n`);
+            md.appendMarkdown(`${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n`);
+            md.appendMarkdown(`# ${char}\n\n`);
             md.appendMarkdown(getCharTableMarkdown(char, hex));
         }
 
@@ -165,7 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     decorations.push({
                         range: range,
                         renderOptions: {
-                            before: {
+                            after: {
                                 contentText: char,
                                 color: '#eae059',
                                 textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
@@ -196,7 +196,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 decorations.push({
                     range: range,
                     renderOptions: {
-                        before: {
+                        after: {
                             contentText: displayValue,
                             color: '#6a9fff',
                             fontStyle: hasCJK ? 'normal' : 'italic',
@@ -290,4 +290,4 @@ export async function activate(context: vscode.ExtensionContext) {
     triggerUpdate();
 }
 
-export function deactivate() {}
+export function deactivate() { }

@@ -14,7 +14,6 @@ function laconToJson(text) {
     let isArrayMode = false;
     let arrayKey = '';
     let arrayContent = [];
-    // Регулярные выражения с поддержкой Unicode (\p{L} - любая буква, \d - цифра)
     const varRegex = /^\s*(?<!\\)\$([\p{L}\d._-]+)\s*=?\s*(.+)$/u;
     const blockStartRegex = /^\s*([\p{L}\d._-]+)\s*(?:>\s*([\p{L}\d._-]+)\s*)?=?\s*\{/u;
     const multiKeyRegex = /^\s*\[([\p{L}\d\s,.*_-]+)\]\s*=?\s*(.+)$/u;
@@ -245,7 +244,6 @@ function parseInlinePairs(text, target, vars, overwrite) {
     }
     if (trimmedText.includes('=')) {
         const keyPositions = [];
-        // Unicode-регулярка для инлайн-ключей
         const findKeysRegex = /(?:^|\s+)(?:([\p{L}\d._-]+)|\[([\p{L}\d\s,.*_-]+)\])\s*=/gu;
         let m;
         while ((m = findKeysRegex.exec(trimmedText)) !== null) {
@@ -377,7 +375,6 @@ function processQuotedMultiline(lines) {
         .join('\n');
 }
 function resolveVariables(value, vars) {
-    // Поддержка переменных на любом языке
     return value.replace(/(?<!\\)\$([\p{L}\d._-]+)(~?)/gu, (match, varName) => vars[varName] !== undefined ? vars[varName] : match);
 }
 function unwrapQuotes(val) {

@@ -8,7 +8,7 @@
     "unicode.category.punctuation": "Пунктуация",
     "unicode.category.symbol": "Символ",
     "unicode.category.separator": "Разделитель",
-    "var.title": "###  Переменная: ",
+    "var.title": "### Переменная: ",
     "var.current": "Текущее значение",
     "var.defined": "Объявлена в",
     "var.line": "Строка"

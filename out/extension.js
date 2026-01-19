@@ -72,7 +72,7 @@ async function activate(context) {
         md.isTrusted = true;
         md.supportHtml = true;
         md.appendMarkdown(`${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n---\n\n`);
-        md.appendMarkdown(`<span style="font-size:40px;">${char}</span>\n\n`);
+        md.appendMarkdown(`# ${char}\n\n`);
         md.appendMarkdown(getCharTableMarkdown(char, hex));
         return md;
     }
@@ -94,8 +94,8 @@ async function activate(context) {
             const hex = unicodeMatch[1];
             const char = String.fromCodePoint(parseInt(hex, 16));
             md.appendMarkdown(`---\n\n`);
-            md.appendMarkdown(`### ${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n`);
-            md.appendMarkdown(`<span style="font-size:30px;">${char}</span>\n\n`);
+            md.appendMarkdown(`${l10n.t("unicode.preview.title")}: U+${hex.toUpperCase()}\n\n`);
+            md.appendMarkdown(`# ${char}\n\n`);
             md.appendMarkdown(getCharTableMarkdown(char, hex));
         }
         return md;
@@ -149,7 +149,7 @@ async function activate(context) {
                     decorations.push({
                         range: range,
                         renderOptions: {
-                            before: {
+                            after: {
                                 contentText: char,
                                 color: '#eae059',
                                 textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
@@ -180,7 +180,7 @@ async function activate(context) {
                 decorations.push({
                     range: range,
                     renderOptions: {
-                        before: {
+                        after: {
                             contentText: displayValue,
                             color: '#6a9fff',
                             fontStyle: hasCJK ? 'normal' : 'italic',
