@@ -66,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
         else if (/\p{S}/u.test(char)) category = l10n.t("unicode.category.symbol");
         else if (/\p{Z}/u.test(char)) category = l10n.t("unicode.category.separator");
 
-        let table = `| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`;
+        let table = `| ${l10n.t("property")} | ${l10n.t("value")} |\n`;
         table += `| :--- | :--- |\n`;
         table += `| **${l10n.t("unicode.category")}** | ${category} |\n`;
         table += `| **Dec** | ${codePoint} |\n`;
@@ -92,7 +92,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const displayValue = replaceUnicodeSequences(info.value);
         md.appendMarkdown(`${l10n.t("var.title")}$${name}\n\n---\n\n`);
         if (info.doc) md.appendMarkdown(`${info.doc}\n\n---\n\n`);
-        md.appendMarkdown(`| ${l10n.t("unicode.property")} | ${l10n.t("unicode.value")} |\n`);
+        md.appendMarkdown(`| ${l10n.t("property")} | ${l10n.t("value")} |\n`);
         md.appendMarkdown(`| :--- | :--- |\n`);
         md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${displayValue}\` |\n`);
         md.appendMarkdown(`| **${l10n.t("var.defined")}** | ${l10n.t("var.line")} ${info.line + 1} |\n\n`);
@@ -214,7 +214,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const unicodeRegEx = /\\u\{([0-9a-fA-F]+)\}/g;
         const varUsageRegEx = /(?<!\\)\$([\p{L}_](?:[\p{L}0-9._-]*[\p{L}0-9_])?)(~?)/gum;
         const emitRegEx = /<emit:\s*(.+?)\s+to\s+([+-])(\d+)(?:\s+as\s+local\s+(\$[\w-]+)\s*=\s*(.+?))?>/g;
-        const functionRegEx = /@f"([^"]+)"\(([^)]+)\)/g;
+        const functionRegEx = /@f\(([^"]+),\s([^)]+)\)/g;
 
         for (const visibleRange of editor.visibleRanges) {
             const startLine = Math.max(0, visibleRange.start.line - 5);
@@ -246,7 +246,7 @@ export async function activate(context: vscode.ExtensionContext) {
                             endStr = (directive.end - 1).toString();
                         }
                         
-                        const label = `${count} entries ${startStr}-${endStr}`;
+                        const label = `${count} ${l10n.t("emit.entries")} ${startStr}-${endStr}`;
                         
                         const emitStart = line.text.indexOf('<emit:');
                         const emitEnd = line.text.indexOf('>', emitStart) + 1;
@@ -255,7 +255,8 @@ export async function activate(context: vscode.ExtensionContext) {
                             range: new vscode.Range(i, emitStart, i, emitEnd),
                             renderOptions: {
                                 after: {
-                                    contentText: label,
+																		contentText: label,
+                                    fontStyle: 'normal',
                                     color: '#ff57f4',
                                     textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
                                     backgroundColor: 'rgba(255, 87, 244, 0.15)',
@@ -283,11 +284,11 @@ export async function activate(context: vscode.ExtensionContext) {
                                 renderOptions: {
                                     after: {
                                         contentText: result,
-                                        color: '#6a9fff',
+                                        color: '#ff57a3',
                                         fontStyle: 'italic',
                                         textDecoration: 'none; font-family: sans-serif; display: inline-block; text-align: center; border-radius: 3px; padding: 0 0.9em; line-height: 1.135em; vertical-align: middle;',
-                                        backgroundColor: 'rgba(106, 159, 255, 0.15)',
-                                        border: '1px solid #6a9fff',
+                                        backgroundColor: 'rgba(255, 106, 153, 0.15)',
+                                        border: '1px solid #ff57a3',
                                         margin: '0 2px',
                                     }
                                 }
@@ -420,17 +421,17 @@ export async function activate(context: vscode.ExtensionContext) {
                         if (range.contains(position)) {
                             const md = new vscode.MarkdownString();
                             md.isTrusted = true;
-                            md.appendMarkdown(`### Emit Directive\n\n`);
-                            md.appendMarkdown(`| Property | Value |\n`);
+                            md.appendMarkdown(`${l10n.t("emit.title")}\n\n`);
+                            md.appendMarkdown(`| ${l10n.t("property")} | ${l10n.t("value")} |\n`);
                             md.appendMarkdown(`| :--- | :--- |\n`);
-                            md.appendMarkdown(`| **Start** | 0x${directive.start.toString(16).toUpperCase()} (${directive.start}) |\n`);
-                            md.appendMarkdown(`| **End** | 0x${(directive.end - 1).toString(16).toUpperCase()} (${directive.end - 1}) |\n`);
-                            md.appendMarkdown(`| **Count** | ${directive.end - directive.start} entries |\n`);
-                            md.appendMarkdown(`| **Direction** | ${directive.direction === '+' ? 'Increment' : 'Decrement'} |\n`);
+                            md.appendMarkdown(`| **${l10n.t("emit.start")}** | 0x${directive.start.toString(16).toUpperCase()} (${directive.start}) |\n`);
+                            md.appendMarkdown(`| **${l10n.t("emit.end")}** | 0x${(directive.end - 1).toString(16).toUpperCase()} (${directive.end - 1}) |\n`);
+                            md.appendMarkdown(`| **${l10n.t("emit.count")}** | ${directive.end - directive.start} ${l10n.t("emit.entries")} |\n`);
+                            md.appendMarkdown(`| **${l10n.t("emit.direction")}** | ${directive.direction === '+' ? `${l10n.t("increment")}` : `${l10n.t("decrement")}`} |\n`);
                             if (directive.localVar) {
-                                md.appendMarkdown(`| **Local Var** | \`$${directive.localVar}\` |\n`);
+                                md.appendMarkdown(`| **${l10n.t("emit.localVar")}** | \`$${directive.localVar}\` |\n`);
                                 if (directive.localVarExpr) {
-                                    md.appendMarkdown(`| **Expression** | \`${directive.localVarExpr}\` |\n`);
+                                    md.appendMarkdown(`| **${l10n.t("emit.localVarExpr")}** | \`${directive.localVarExpr}\` |\n`);
                                 }
                             }
                             return new vscode.Hover(md, range);
@@ -439,17 +440,17 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
                 
                 // Hover для @f функций
-                const functionRegEx = /@f"([^"]+)"\(([^)]+)\)/g;
+                const functionRegEx = /@f\(([^"]+),\s([^)]+)\)/g;
                 while ((m = functionRegEx.exec(lineText)) !== null) {
                     const range = new vscode.Range(position.line, m.index, position.line, m.index + m[0].length);
                     if (range.contains(position)) {
                         const md = new vscode.MarkdownString();
                         md.isTrusted = true;
-                        md.appendMarkdown(`### Format Function\n\n`);
-                        md.appendMarkdown(`| Property | Value |\n`);
+                        md.appendMarkdown(`### ${l10n.t("format.title")}\n\n`);
+                        md.appendMarkdown(`| ${l10n.t("property")} | ${l10n.t("value")} |\n`);
                         md.appendMarkdown(`| :--- | :--- |\n`);
-                        md.appendMarkdown(`| **Format** | \`${m[1]}\` |\n`);
-                        md.appendMarkdown(`| **Argument** | \`${m[2]}\` |\n`);
+                        md.appendMarkdown(`| **${l10n.t("format.format")}** | \`${m[1]}\` |\n`);
+                        md.appendMarkdown(`| **${l10n.t("format.value")}** | \`${m[2]}\` |\n`);
                         
                         try {
                             const globalVarsObj: Record<string, string> = {};
@@ -457,9 +458,9 @@ export async function activate(context: vscode.ExtensionContext) {
                                 globalVarsObj[name] = info.value;
                             });
                             const result = executeFunctionCall(m[0], globalVarsObj);
-                            md.appendMarkdown(`| **Result** | \`${result}\` |\n`);
+                            md.appendMarkdown(`| **${l10n.t("format.result")}** | \`${result}\` |\n`);
                         } catch (e: any) {
-                            md.appendMarkdown(`| **Error** | ${e.message} |\n`);
+                            md.appendMarkdown(`| **${l10n.t("error")}** | ${e.message} |\n`);
                         }
                         
                         return new vscode.Hover(md, range);
@@ -486,12 +487,12 @@ export async function activate(context: vscode.ExtensionContext) {
                             const localValue = lineLocals.get(m[1]) || '';
                             const md = new vscode.MarkdownString();
                             md.isTrusted = true;
-                            md.appendMarkdown(`### Local Variable: $${m[1]}\n\n`);
-                            md.appendMarkdown(`| Property | Value |\n`);
+                            md.appendMarkdown(`${l10n.t("var.local.title")}$${m[1]}\n\n`);
+                            md.appendMarkdown(`| ${l10n.t("property")} | ${l10n.t("value")} |\n`);
                             md.appendMarkdown(`| :--- | :--- |\n`);
-                            md.appendMarkdown(`| **Type** | Local (emit) |\n`);
-                            md.appendMarkdown(`| **First Value** | \`${localValue}\` |\n`);
-                            md.appendMarkdown(`\nThis variable is local to the emit directive and changes with each iteration.\n`);
+                            md.appendMarkdown(`| **${l10n.t("type")}** | Local (emit) |\n`);
+                            md.appendMarkdown(`| **${l10n.t("var.current")}** | \`${localValue}\` |\n`);
+                            md.appendMarkdown(`\n${l10n.t("var.local.description")}\n`);
                             return new vscode.Hover(md, range);
                         }
                         

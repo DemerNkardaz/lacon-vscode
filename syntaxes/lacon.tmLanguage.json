@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "LaCoN",
   "patterns": [
+    { "include": "#emit_directive" },
     { "include": "#unicode_escape" },
     { "include": "#comments" },
     { "include": "#escapes" },
@@ -23,6 +24,49 @@
     { "include": "#operators" }
   ],
   "repository": {
+    "emit_directive": {
+      "patterns": [
+        {
+          "name": "meta.directive.emit.lacon",
+          "begin": "(<)(emit:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.section.brackets.lacon" },
+            "2": { "name": "support.class.lacon" }
+          },
+          "end": "(>)",
+          "endCaptures": {
+            "1": { "name": "punctuation.section.brackets.lacon" }
+          },
+          "patterns": [
+            {
+              "name": "keyword.control.lacon",
+              "match": "\\b(to|as)\\b"
+            },
+            {
+              "name": "variable.parameter.lacon",
+              "match": "\\blocal\\b"
+            },
+            {
+              "include": "#hex_numbers"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#keywords_variable"
+            },
+            {
+              "match": "[+-]",
+              "name": "keyword.operator.lacon"
+            },
+            {
+              "match": "=",
+              "name": "keyword.operator.assignment.lacon"
+            }
+          ]
+        }
+      ]
+    },
     "unicode_escape": {
       "comment": "Высокий приоритет для корректной окраски \\u{...}",
       "patterns": [

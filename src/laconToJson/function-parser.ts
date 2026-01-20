@@ -52,7 +52,7 @@ export function formatValue(formatStr: string, value: string | number, vars: Rec
  */
 export function parseFunctionCall(text: string): { format: string; arg: string } | null {
     // Регулярное выражение для @f"формат"(аргумент)
-    const match = text.match(/@f"([^"]+)"\(([^)]+)\)/);
+    const match = text.match(/@f\(([^"]+),\s([^)]+)\)/);
     if (!match) {
         return null;
     }
@@ -98,7 +98,7 @@ export function processFunctionsInText(
     currentValue?: number
 ): string {
     let result = text;
-    const funcRegex = /@f"[^"]+"\([^)]+\)/g;
+    const funcRegex = /@f\([^"]+,\s[^)]+\)/g;
     
     result = result.replace(funcRegex, (match) => {
         return executeFunctionCall(match, vars, currentValue);
