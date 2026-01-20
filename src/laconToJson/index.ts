@@ -10,13 +10,16 @@ import { parseLaconFile as parseLaconFileImport } from './import-parser';
 import { resolveVariables, assignMultiValues } from './variable-parser';
 import { appendValue } from './utils';
 import { exportRegex } from './regex';
+import { preprocessLacon } from './preprocessor';
 
 /**
  * Конвертирует текст LACON в JSON-строку
  */
 export function laconToJson(text: string, sourcePath?: string): string {
     const currentDir = sourcePath ? path.dirname(sourcePath) : process.cwd();
-    const obj = laconToJsonInternalWrapper(text, currentDir, new Set());
+    // Препроцессинг: раскрываем <emit> и обрабатываем функции @f
+    const preprocessed = preprocessLacon(text);
+    const obj = laconToJsonInternalWrapper(preprocessed, currentDir, new Set());
     return JSON.stringify(obj, null, 2);
 }
 
@@ -35,6 +38,7 @@ function laconToJsonInternalWrapper(
     currentDir: string,
     importStack: Set<string>
 ): any {
+    // Препроцессинг уже выполнен на верхнем уровне, здесь просто парсим
     return laconToJsonInternal(
         text,
         currentDir,
