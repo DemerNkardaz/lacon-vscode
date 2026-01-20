@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as l10n from '@vscode/l10n';
-import { laconToJson } from './laconToJson';
 import { LaconJsonProvider } from './previewProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
