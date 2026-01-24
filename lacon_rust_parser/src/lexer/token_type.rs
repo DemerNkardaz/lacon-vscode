@@ -30,6 +30,7 @@ pub enum TokenType {
     PlusPlus,     // ++ \\ Increment
     MinusMinus,   // -- \\ Decrement
     Equal,        // =  \\ Assign
+    Whitespace,   //   \\ Can be Assign
     PlusEqual,    // += \\ AddAssign
     MinusEqual,   // -= \\ SubAssign
     StarEqual,    // *= \\ MulAssign
