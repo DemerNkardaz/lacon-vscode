@@ -13,6 +13,7 @@ pub enum TokenType {
     Dot,          // .  \\ MemberAccess
     Semicolon,    // ;  \\ StatementEnd
     Colon,        // :  \\ TypeOrLabel
+    ColonColon,   // :: \\ TypeOrLabel
     Question,     // ?  \\ Conditional / Nullable
 
     // ─────────────────────────────────────────────
