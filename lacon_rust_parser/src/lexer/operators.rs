@@ -20,7 +20,16 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
         ',' => simple(TokenType::Comma),
         ';' => simple(TokenType::Semicolon),
         ':' => simple(TokenType::Colon),
-        '?' => simple(TokenType::Question),
+
+        // Знаки вопроса
+        '?' => match c2 {
+            Some('?') => OpMatch {
+                token_type: TokenType::QuestionQuestion,
+                consume_count: 1,
+            },
+            _ => simple(TokenType::Question),
+        },
+
         '^' => match c2 {
             Some('=') => OpMatch {
                 token_type: TokenType::XorEqual,
@@ -114,7 +123,7 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
                 token_type: TokenType::PercentEqual,
                 consume_count: 1,
             },
-            _ => simple(TokenType::Percent), // Также может быть UnitPercent в зависимости от контекста
+            _ => simple(TokenType::Percent),
         },
         // Сравнение и равенство
         '=' => match c2 {

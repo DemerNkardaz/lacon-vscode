@@ -59,6 +59,7 @@ pub enum TokenType {
     Not,                // not \\ LogicalNot (keyword)
     AmpersandAmpersand, // && \\ LogicalAnd
     PipePipe,           // ||  \\ LogicalOr
+    QuestionQuestion,   // ?? \\ NullishCoalescing
 
     // ─────────────────────────────────────────────
     // Битовые операторы
