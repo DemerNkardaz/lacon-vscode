@@ -95,21 +95,16 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
             _ => simple(TokenType::Star),
         },
         '/' => match c2 {
-            Some('/') => {
-                if let Some('/') = c3 {
-                    OpMatch {
-                        token_type: TokenType::DocComment,
-                        consume_count: 2,
-                    }
-                } else {
-                    OpMatch {
-                        token_type: TokenType::LineComment,
-                        consume_count: 1,
-                    }
-                }
-            }
+            Some('|') if c3 == Some('\\') => OpMatch {
+                token_type: TokenType::LineComment,
+                consume_count: 2,
+            },
             Some('*') => OpMatch {
                 token_type: TokenType::BlockComment,
+                consume_count: 1,
+            },
+            Some('/') => OpMatch {
+                token_type: TokenType::DoubleSlash,
                 consume_count: 1,
             },
             Some('=') => OpMatch {
@@ -117,6 +112,13 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
                 consume_count: 1,
             },
             _ => simple(TokenType::Slash),
+        },
+        '\\' => match c2 {
+            Some('\\') => OpMatch {
+                token_type: TokenType::DoubleBackslash,
+                consume_count: 1,
+            },
+            _ => simple(TokenType::Backslash),
         },
         '%' => match c2 {
             Some('=') => OpMatch {

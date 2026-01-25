@@ -124,4 +124,13 @@ Number               | 2               | 2
 RightParen           | )               | None      
 Identifier           | z               | None      
 Newline              |                 | None      
+Private              | private         | None      
+Constant             | const           | None      
+Identifier           | superstring     | None      
+Less                 | <               | None      
+Identifier           | String          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+String               | "this is \"super\" string" | this is \"super\" string
+Newline              |                 | None      
 EOF                  |                 | None      

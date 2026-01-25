@@ -3,28 +3,31 @@ pub enum TokenType {
     // ─────────────────────────────────────────────
     // Структурные символы / разделители
     // ─────────────────────────────────────────────
-    LeftParen,    // (  \\ GroupStart
-    RightParen,   // )  \\ GroupEnd
-    LeftBrace,    // {  \\ BlockStart
-    RightBrace,   // }  \\ BlockEnd
-    LeftBracket,  // [  \\ IndexStart
-    RightBracket, // ]  \\ IndexEnd
-    Comma,        // ,  \\ Separator
-    Dot,          // .  \\ MemberAccess
-    DotDotDot,    // ... \\ Destructuring
-    Semicolon,    // ;  \\ StatementEnd
-    Colon,        // :  \\ TypeOrLabel
-    ColonColon,   // :: \\ TypeOrLabel
-    Question,     // ?  \\ Conditional / Nullable
+    LeftParen,       // (  \\ GroupStart
+    RightParen,      // )  \\ GroupEnd
+    LeftBrace,       // {  \\ BlockStart
+    RightBrace,      // }  \\ BlockEnd
+    LeftBracket,     // [  \\ IndexStart
+    RightBracket,    // ]  \\ IndexEnd
+    Comma,           // ,  \\ Separator
+    Dot,             // .  \\ MemberAccess
+    DotDotDot,       // ... \\ Destructuring
+    Semicolon,       // ;  \\ StatementEnd
+    Colon,           // :  \\ TypeOrLabel
+    ColonColon,      // :: \\ TypeOrLabel
+    Backslash,       // \  \\
+    DoubleBackslash, // \\ \\
+    Question,        // ?  \\ Conditional / Nullable
 
     // ─────────────────────────────────────────────
     // Арифметические операторы
     // ─────────────────────────────────────────────
-    Plus,    // +  \\ Add
-    Minus,   // -  \\ Subtract / Negate
-    Star,    // *  \\ Multiply
-    Slash,   // /  \\ Divide
-    Percent, // %  \\ Modulo
+    Plus,        // +  \\ Add
+    Minus,       // -  \\ Subtract / Negate
+    Star,        // *  \\ Multiply
+    Slash,       // /  \\ Divide
+    DoubleSlash, // // \\ IntegerDivide
+    Percent,     // %  \\ Modulo
 
     // ─────────────────────────────────────────────
     // Инкременты и присваивания

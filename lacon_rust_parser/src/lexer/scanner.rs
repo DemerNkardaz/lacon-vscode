@@ -10,7 +10,7 @@ pub struct Scanner {
     tokens: Vec<Token>,
     start: usize,
     current: usize,
-    position: Position,       // Текущая позиция (меняется при advance)
+    position: Position,       // Текущая позиция
     start_position: Position, // Позиция начала текущего токена
     indent_stack: Vec<usize>,
     context_stack: Vec<TokenType>,
@@ -40,7 +40,6 @@ impl Scanner {
 
         while !self.is_at_end() {
             self.start = self.current;
-            // Фиксируем позицию начала нового токена перед его обработкой
             self.start_position = self.position;
 
             if self.is_at_line_start {
@@ -83,16 +82,6 @@ impl Scanner {
             }
 
             '"' => self.scan_string(),
-
-            '/' => {
-                if self.match_char('/') {
-                    self.skip_line_comment();
-                } else if self.match_char('*') {
-                    self.skip_block_comment();
-                } else {
-                    self.handle_operator(c);
-                }
-            }
 
             '(' | '[' | '{' => {
                 let t_type = match c {
@@ -177,6 +166,7 @@ impl Scanner {
         let quote_len = if is_multiline { 3 } else { 1 };
 
         while !self.is_at_end() {
+            // Проверка завершения многострочной строки (""")
             if is_multiline {
                 if self.peek() == Some('"')
                     && self.peek_next() == Some('"')
@@ -185,13 +175,23 @@ impl Scanner {
                     break;
                 }
             } else {
+                // Проверка завершения обычной строки (") или прерывания новой строкой
                 if self.peek() == Some('"') || self.peek() == Some('\n') {
                     break;
                 }
             }
-            self.advance();
+
+            let c = self.advance();
+
+            // --- ЛОГИКА ЭКРАНИРОВАНИЯ ---
+            // Если встречаем \, мы "проглатываем" следующий символ,
+            // чтобы он не воспринимался как управляющий (например, закрывающая кавычка)
+            if c == '\\' && !self.is_at_end() {
+                self.advance();
+            }
         }
 
+        // Проверка на незакрытую строку
         if self.is_at_end() || (!is_multiline && self.peek() == Some('\n')) {
             self.report_error(
                 LexicalErrorType::UnterminatedString,
@@ -200,16 +200,21 @@ impl Scanner {
             return;
         }
 
+        // Поглощаем закрывающие кавычки
         for _ in 0..quote_len {
             self.advance();
         }
 
+        // Извлекаем содержимое.
+        // Мы берем срез от (начало + длина кавычек) до (текущий - длина кавычек)
         let literal_value = self.get_slice(self.start + quote_len, self.current - quote_len);
+
         let t_type = if is_multiline {
             TokenType::MultilineString
         } else {
             TokenType::String
         };
+
         self.add_token_with_literal(t_type, literal_value);
     }
 
@@ -238,8 +243,8 @@ impl Scanner {
         }
         let next_c = self.source[look];
 
-        // Добавлен '-' для распознавания пробела перед отрицательными числами
-        next_c.is_alphanumeric() || matches!(next_c, '-' | '"' | '{' | '[' | '(' | '_' | '#' | '$')
+        next_c.is_alphanumeric()
+            || matches!(next_c, '-' | '"' | '{' | '[' | '(' | '_' | '#' | '$' | '\\')
     }
 
     fn handle_indentation(&mut self) {
@@ -258,17 +263,18 @@ impl Scanner {
             }
         }
 
-        // Если мы внутри комментариев или пустая строка — игнорируем
         if matches!(self.peek(), Some('\n') | Some('\r')) {
             return;
         }
-        if self.peek() == Some('/') && matches!(self.peek_next(), Some('/') | Some('*')) {
-            return;
+
+        // Игнорируем отступы для нового типа комментария /|\ или старого /*
+        if self.peek() == Some('/') {
+            let c2 = self.peek_next();
+            if c2 == Some('|') || c2 == Some('*') {
+                return;
+            }
         }
 
-        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
-        // Если context_stack не пуст (мы внутри (), [] или {}),
-        // мы просто поглощаем пробелы, но не генерируем токены Indent/Dedent.
         if !self.context_stack.is_empty() {
             self.is_at_line_start = false;
             self.start = self.current;
@@ -278,17 +284,14 @@ impl Scanner {
 
         let last_indent = *self.indent_stack.last().unwrap();
         if spaces > last_indent {
-            // Увеличение отступа
             self.indent_stack.push(spaces);
             self.add_token_raw(TokenType::Indent);
         } else if spaces < last_indent {
-            // Уменьшение отступа (Dedent)
             while spaces < *self.indent_stack.last().unwrap() {
                 self.indent_stack.pop();
                 self.add_token_raw(TokenType::Dedent);
             }
 
-            // Проверка на корректность: мы должны попасть ровно в один из предыдущих уровней
             if spaces != *self.indent_stack.last().unwrap() {
                 self.report_error(
                     LexicalErrorType::InvalidIndent,
@@ -304,27 +307,43 @@ impl Scanner {
         self.start = self.current;
         self.start_position = self.position;
     }
+
     fn handle_operator(&mut self, c: char) {
         let op = match_operator(c, self.peek(), self.peek_next());
-        if op.token_type == TokenType::Unknown {
-            if c == '-' {
-                // Если за минусом цифра — это число
-                if self.peek().map_or(false, |next| next.is_digit(10)) {
-                    self.scan_number();
-                } else {
-                    // Иначе это может быть начало идентификатора (например, -moz-target)
+
+        match op.token_type {
+            TokenType::Unknown => {
+                if c == '-' {
+                    if self.peek().map_or(false, |next| next.is_digit(10)) {
+                        self.scan_number();
+                    } else {
+                        self.scan_identifier();
+                    }
+                } else if c == '_' {
                     self.scan_identifier();
+                } else {
+                    self.report_error(LexicalErrorType::InvalidCharacter(c), "Unknown character");
                 }
-            } else if c == '_' {
-                self.scan_identifier();
-            } else {
-                self.report_error(LexicalErrorType::InvalidCharacter(c), "Unknown character");
             }
-        } else {
-            for _ in 0..op.consume_count {
-                self.advance();
+            TokenType::LineComment => {
+                // Поглощаем символы индикатора комментария (уже учтен consume_count)
+                for _ in 0..op.consume_count {
+                    self.advance();
+                }
+                self.skip_line_comment();
             }
-            self.add_token(op.token_type);
+            TokenType::BlockComment => {
+                for _ in 0..op.consume_count {
+                    self.advance();
+                }
+                self.skip_block_comment();
+            }
+            _ => {
+                for _ in 0..op.consume_count {
+                    self.advance();
+                }
+                self.add_token(op.token_type);
+            }
         }
     }
 
