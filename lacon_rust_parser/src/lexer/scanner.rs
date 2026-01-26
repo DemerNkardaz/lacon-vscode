@@ -129,9 +129,13 @@ impl Scanner {
                 let next = self.peek();
                 let next_next = self.peek_next();
 
+                // Здесь 'next' — это потенциальная 'I'.
+                // Значит nfinity начинается с ПЕРВОГО символа после current (offset 1)
+                let is_inf = (next == Some('I') || next == Some('i')) && self.check_infinity(1);
+
                 if next == Some('>') {
                     self.handle_operator(c);
-                } else if next.map_or(false, |n| n.is_alphabetic() || n == '_')
+                } else if (!is_inf && next.map_or(false, |n| n.is_alphabetic() || n == '_'))
                     || (next == Some('$') && next_next == Some('{'))
                 {
                     self.scan_identifier();
@@ -146,6 +150,11 @@ impl Scanner {
 
                 if c.is_digit(10) {
                     self.scan_number();
+                }
+                // Здесь 'c' — это уже поглощенная 'I'.
+                // Значит nfinity начинается сразу с НУЛЕВОГО символа от current (offset 0)
+                else if (c == 'I' || c == 'i') && self.check_infinity(0) {
+                    self.scan_infinity_as_number();
                 } else if c.is_alphabetic() || c == '_' {
                     self.scan_identifier();
                 } else {
@@ -282,6 +291,69 @@ impl Scanner {
             }
         }
 
+        self.add_token_with_literal(TokenType::Number, value_literal);
+    }
+
+    fn check_infinity(&self, offset: usize) -> bool {
+        let expected = "nfinity";
+        for (i, ch) in expected.chars().enumerate() {
+            // offset позволяет нам "перепрыгнуть" 'I' или 'i'
+            if self.peek_at(i + offset).map(|c| c.to_ascii_lowercase()) != Some(ch) {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn scan_infinity_as_number(&mut self) {
+        // Поглощаем "nfinity" (буква 'I' уже поглощена в scan_token)
+        for _ in 0..7 {
+            self.advance();
+        }
+
+        let value_literal = "Infinity".to_string();
+
+        // А теперь магия: используем уже готовую у тебя логику юнитов!
+        // Просто копируем блок обработки суффиксов из scan_number
+        if let Some(c) = self.peek() {
+            if c == '%' {
+                self.advance();
+                self.add_token_with_literal(TokenType::UnitPercent, value_literal);
+                return;
+            }
+
+            if c.is_alphabetic() || c == 'µ' || c == 'μ' || c == 'Ω' || c == '\u{00B0}' {
+                let suffix_start = self.current;
+                let pos_before_suffix = self.position;
+
+                while let Some(nc) = self.peek() {
+                    if nc.is_alphanumeric()
+                        || nc == '/'
+                        || nc == 'µ'
+                        || nc == 'μ'
+                        || nc == 'Ω'
+                        || nc == '\u{00B0}'
+                    {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+
+                let suffix = self.get_slice(suffix_start, self.current);
+                if let Some(t_type) = get_unit_type(&suffix) {
+                    self.add_token_with_literal(t_type, value_literal);
+                    return;
+                } else {
+                    self.current = suffix_start;
+                    self.position = pos_before_suffix;
+                }
+            }
+        }
+
+        // Если юнита нет, просто добавляем Infinity как число или спец. токен
+        // У тебя в get_keyword_token скорее всего уже есть логика для Infinity,
+        // но здесь мы его классифицируем как Number для парсера.
         self.add_token_with_literal(TokenType::Number, value_literal);
     }
 

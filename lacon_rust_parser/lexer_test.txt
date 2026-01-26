@@ -433,4 +433,27 @@ Greater              | >               | None
 Equal                | =               | None      
 Number               | 0cZYX           | 0cZYX     
 Newline              |                 | None      
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | abcdefg         | None      
+Equal                | =               | None      
+UnitWeight           | Infinitykg      | Infinity  
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | hijklmn         | None      
+Equal                | =               | None      
+Minus                | -               | None      
+UnitWeight           | Infinitykg      | Infinity  
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | abcdefg         | None      
+Equal                | =               | None      
+UnitWeight           | 10kg            | 10        
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | hijklmn         | None      
+Equal                | =               | None      
+Minus                | -               | None      
+UnitWeight           | 10kg            | 10        
+Newline              |                 | None      
 EOF                  |                 | None      

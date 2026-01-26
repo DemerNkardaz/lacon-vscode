@@ -120,7 +120,8 @@
         { "name": "constant.numeric.base32.lacon", "match": "\\b0[tT][0-9a-vA-V_]+\\b" },
         { "name": "constant.numeric.base32.crockford.lacon", "match": "\\b0[cC][0-9a-zA-Z_&&[^iIlLoOuU]]+\\b" },
         { "name": "constant.numeric.float.lacon", "match": "\\b\\d[0-9_]*\\.\\d[0-9_]*([eE][+-]?\\d[0-9_]*)?\\b" },
-        { "name": "constant.numeric.integer.lacon", "match": "\\b\\d[0-9_]*\\b" }
+        { "name": "constant.numeric.integer.lacon", "match": "\\b\\d[0-9_]*\\b" },
+        { "name": "constant.numeric.infinity.lacon", "match": "\\b([iI]nfinity|[nN]aN)\\b" }
       ]
     },
     "units": {
@@ -135,7 +136,7 @@
         },
         {
           "comment": "2. Температура с символом градуса (25°C, 25°Da)",
-          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(°)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?|[iI]nfinity)(\u00B0)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" },
@@ -144,7 +145,7 @@
         },
         {
           "comment": "3. Температура с префиксом deg (25degC)",
-          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(deg)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?|[iI]nfinity)(deg)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" },
@@ -153,7 +154,7 @@
         },
         {
           "comment": "4. Одиночные градусы угла и температуры (25deg, 25°, 273K)",
-          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(deg|°|rad|K)\\b",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?|[iI]nfinity)(deg|\u00B0|rad|K)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" }
@@ -161,7 +162,7 @@
         },
         {
           "comment": "5. Сложные скорости (km/h, m/s и т.д.)",
-          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)([a-z]+/[a-z]+)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?|[iI]nfinity)([a-z]+/[a-z]+)",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" }
@@ -169,7 +170,7 @@
         },
         {
           "comment": "6. Универсальное правило СИ (префикс + база)",
-          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(?:(da|h|k|M|G|T|P|E|Z|Y|R|Q|d|c|m|μ|µ|u|n|p|f|a|z|y|r|q))?(Hz|m|g|V|A|W|Ω|ohm|C|S|F|J|Pa|b|B|s|sec|min|hour|day|week|month|year|D|t|lb|oz|kn|px|em|rem|pt|in|pc|cal|Wh|psi|bar)\\b",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?|[iI]nfinity)(?:(da|h|k|M|G|T|P|E|Z|Y|R|Q|d|c|m|μ|µ|u|n|p|f|a|z|y|r|q))?(Hz|m|g|V|A|W|Ω|ohm|C|S|F|J|Pa|b|B|s|sec|min|hour|day|week|month|year|D|t|lb|oz|kn|px|em|rem|pt|in|pc|cal|Wh|psi|bar)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.prefix.lacon" },

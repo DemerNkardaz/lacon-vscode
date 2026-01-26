@@ -93,6 +93,7 @@ pub enum TokenType {
     // ─────────────────────────────────────────────
     Identifier,         // name \\ Identifier
     Number,             // 123  \\ NumericLiteral
+    NumberInfinity,     // inf  \\ NumericLiteral
     String,             // " "  \\ StringLiteral
     SingleQuotedString, // ' '  \\ StringLiteral
     GraveQuotedString,  // ` `  \\ StringLiteral
@@ -120,11 +121,18 @@ pub enum TokenType {
     For,   // for  \\ LoopFor
     While, // while\\ LoopWhile
     Loop,  // loop \\ InfiniteLoop
+    Until, // until \\ LoopUntil
 
     Spread,   // spread \\ ExpansionDirective
     Generate, // generate \\ GeneratorBlock
 
-    Filter, // filter \\ Filter
+    Combine,   // combine \\ Combine
+    Enumerate, // enumerate \\ Enumeration
+    Filter,    // filter \\ Filter
+    Flatten,   // flatten \\ Flatten
+    Repeat,    // repeat \\ Repeat
+    Transform, // transform \\ Transform
+    Transpose, // transpose \\ Transpose
 
     Break,    // break \\ LoopBreak
     Continue, // continue \\ LoopContinue

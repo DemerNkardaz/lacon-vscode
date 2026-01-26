@@ -90,6 +90,11 @@ const number8<Number> = 0o071
 const number16<Number> = 0x348FABD1
 const number32<Number> = 0tL1FF
 const number32<Number> = 0cZYX
+
+const abcdefg = Infinitykg
+const hijklmn = -Infinitykg
+const abcdefg = 10kg
+const hijklmn = -10kg
 "#;
 
         let source2 = r#"

@@ -17,9 +17,16 @@ lazy_static! {
         m.insert("switch",     TokenType::Switch);
         m.insert("for",        TokenType::For);
         m.insert("while",      TokenType::While);
+        m.insert("until",      TokenType::Until);
         m.insert("spread",      TokenType::Spread);
         m.insert("generate",      TokenType::Generate);
+        m.insert("combine",    TokenType::Combine);
+        m.insert("enumerate",  TokenType::Enumerate);
         m.insert("filter",      TokenType::Filter);
+        m.insert("flatten",    TokenType::Flatten);
+        m.insert("repeat",     TokenType::Repeat);
+        m.insert("transform",  TokenType::Transform);
+        m.insert("transpose",  TokenType::Transpose);
         m.insert("loop",       TokenType::Loop);
         m.insert("break",      TokenType::Break);
         m.insert("continue",   TokenType::Continue);
@@ -104,6 +111,9 @@ lazy_static! {
         // --- Единицы измерения (как зарезервированные слова) ---
         m.insert("deg",        TokenType::UnitDegree);
         m.insert("rad",        TokenType::UnitRadian);
+
+        // --- Константы ---
+        m.insert("infinity",        TokenType::NumberInfinity);
 
         m
     };
