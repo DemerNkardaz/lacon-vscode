@@ -6,7 +6,6 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#strings" },
-    { "include": "#interpolation" },
     { "include": "#units" },
     { "include": "#numbers" },
     { "include": "#keywords" },
@@ -46,17 +45,32 @@
     "interpolation": {
       "patterns": [
         {
-          "name": "meta.interpolation.lacon",
+          "name": "meta.embedded.expression.lacon",
+          "contentName": "source.lacon.embedded",
           "begin": "\\$\\{",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.interpolation.begin.lacon" }
+            "0": { "name": "punctuation.definition.template-expression.begin.lacon" }
           },
           "end": "\\}",
           "endCaptures": {
-            "0": { "name": "punctuation.definition.interpolation.end.lacon" }
+            "0": { "name": "punctuation.definition.template-expression.end.lacon" }
           },
           "patterns": [
-            { "include": "$self" }
+            { "include": "#comments" },
+            { "include": "#units" },
+            { "include": "#numbers" },
+            { "include": "#keywords" },
+            { "include": "#storage-modifiers" },
+            { "include": "#declaration-keywords" },
+            { "include": "#access-modifiers" },
+            { "include": "#control-flow" },
+            { "include": "#operators" },
+            { "include": "#constants" },
+            { "include": "#attributes" },
+            { "include": "#functions" },
+            { "include": "#type-annotations" },
+            { "include": "#types" },
+            { "include": "#identifiers" }
           ]
         }
       ]
@@ -76,6 +90,18 @@
           "name": "string.quoted.double.lacon",
           "begin": "\"",
           "end": "\"",
+          "patterns": [
+            { "include": "#interpolation" },
+            {
+              "name": "constant.character.escape.lacon",
+              "match": "\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4})"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.lacon",
+          "begin": "'",
+          "end": "'",
           "patterns": [
             { "include": "#interpolation" },
             {
