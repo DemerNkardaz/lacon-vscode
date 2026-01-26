@@ -233,6 +233,7 @@
         { "name": "variable.language.method.lacon", "match": "\\b(methods?)\\b" },
         { "name": "variable.language.input.lacon", "match": "\\b(inputs?)\\b" },
         { "name": "variable.language.output.lacon", "match": "\\b(outputs?)\\b" },
+        { "name": "variable.language.argument.lacon", "match": "\\b(arguments?|args?)\\b" },
         { "name": "variable.language.data.lacon", "match": "\\b(data)\\b" },
         { "name": "variable.language.each.lacon", "match": "\\b(each)\\b" },
         { "name": "variable.language.item.lacon", "match": "\\b(items?)\\b" },
@@ -263,7 +264,7 @@
     "functions": {
       "patterns": [
         {
-          "match": "\\b(function|procedure)\\s+([\\p{L}_][\\p{L}\\p{N}_-]*)",
+          "match": "\\b(function|procedure)\\s+([\\p{L}_][\\p{L}\\p{N}_-]*)(?:\\s*<[^>]+>)?",
           "captures": {
             "1": { "name": "storage.type.function.lacon" },
             "2": { "name": "entity.name.function.lacon" }
@@ -271,7 +272,7 @@
         },
         {
           "name": "entity.name.function.call.lacon",
-          "match": "\\b([\\p{L}_][\\p{L}\\p{N}_-]*)(?=\\s*\\()"
+          "match": "\\b([\\p{L}_][\\p{L}\\p{N}_-]*)(?=\\s*<[^>]+>\\s*\\(|\\s*\\()"
         }
       ]
     },
