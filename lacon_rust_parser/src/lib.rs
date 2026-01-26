@@ -26,6 +26,7 @@
 // }
 
 pub mod lexer;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {
@@ -36,6 +37,61 @@ mod tests {
     #[test]
     fn test_lexer_to_file() {
         let source = r#"
+generate (0x4E3 .. -10) as local let code-point {
+	yield unicode-${code-point} {
+		char \u{${code-point}}
+	}
+}
+spread ['one', 'two', 'three', 'four', 'five'] as name {
+	yield digit-${name} {
+		number-value: index
+	}
+}
+spread ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces', 'ophiuchus'] as let name {
+	local code-point = format("{:04X}", 0x2648 + index)
+	yield astrological-zodiacal-sign-{name}-text {
+		code-point: `U+${code-point}`
+		sequence: [code-point, `FE0E`]
+		pos: index
+	}
+}
+spread (['c', 's'], ['prosgegrammeni', 'ypogegrammeni']) as let (letter-case, suffix) {
+	local const code-points = [1FBC, 1FB3]
+	yield hel_${letter-case}_let_a_alpha__${suffix} {
+		unicode: select(code-points)
+		symbol {
+			letter: hel_${letter-case}_let_a_alpha
+		}
+	}
+}
+spread (['c', 's'], ['prosgegrammeni', 'ypogegrammeni'], [1FBC, 1FB3]) as let (letter-case, suffix, code-point) {
+	yield hel_${letter-case}_let_a_alpha__${suffix} {
+		unicode: code-point
+		symbol {
+			letter: `hel_${letter-case}_let_a_alpha`
+		}
+	}
+}
+
+let speed<Speed> = 278ft/s
+let time<Time> = 25μs
+let length<Length> = 25pc
+let degree<Degree> = 45°
+const generator-power<ElectricPower> = 15kW
+const vector-shield-dimension<Dimension> = 2D
+const fule-energy<Energy> = 1.5MJ
+const temperature<Temperature> = 25°C
+const temperature<Temperature> = 25K
+const resistance<ElectricResistance> = 10_000MΩ
+const resistance<ElectricResistance> = 10000kΩ
+const number2<Number> = 0b1011110011
+const number8<Number> = 0o071
+const number16<Number> = 0x348FABD1
+const number32<Number> = 0tL1FF
+const number32<Number> = 0cZYX
+"#;
+
+        let source2 = r#"
 a - b     
 a-b       
 a -2      
@@ -91,9 +147,12 @@ private const superstring<String> = "this is \"super\" string"
 
 let speed 278mi/h
 let length 25pc
+let degree 45°
 const generator-power 15kW
 const vector-shield-dimension 2D
 const fule-energy 1.5MJ
+const temperature 25°C
+const resistance 10000MΩ
 
 let string "string"
 let string 'string'
@@ -106,6 +165,7 @@ const winter-${first-word}${second-word} #dbebed
 const winter-${first-word}-${second-word} #dbebed
 const winter-${first-word}_${second-word} #dbebed
 winter-${a}-${b} value
+const emptyItem = [value, , value]
 "#;
 
         let mut scanner = Scanner::new(source.to_string());

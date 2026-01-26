@@ -2,335 +2,430 @@ TYPE                 | LEXEME          | LITERAL
 --------------------------------------------------
 BOF                  |                 | None      
 Newline              |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
+Generate             | generate        | None      
+LeftParen            | (               | None      
+Number               | 0x4E3           | 0x4E3     
+DotDot               | ..              | None      
 Minus                | -               | None      
-Identifier           | b               | None      
-Newline              |                 | None      
-Identifier           | a-b             | None      
-Newline              |                 | None      
-Identifier           | a               | None      
+Number               | 10              | 10        
+RightParen           | )               | None      
 Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Identifier           | b               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Identifier           | b               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Identifier           | b               | None      
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a-b             | None      
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Identifier           | b               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Global               | global          | None      
-Constant             | const           | None      
-Identifier           | const-name      | None      
-Whitespace           |                 | None      
-Identifier           | a               | None      
-Whitespace           |                 | None      
-Identifier           | b               | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 2               | 2         
-Newline              |                 | None      
-Newline              |                 | None      
-Identifier           | container       | None      
-Whitespace           |                 | None      
-Identifier           | App             | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | styles          | None      
+As                   | as              | None      
+Local                | local           | None      
+Variable             | let             | None      
+Identifier           | code-point      | None      
 Whitespace           |                 | None      
 LeftBrace            | {               | None      
 Newline              |                 | None      
+Yield                | yield           | None      
+Identifier           | unicode-        | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | code-point      | None      
+RightBrace           | }               | None      
+LeftBrace            | {               | None      
 Newline              |                 | None      
-Identifier           | width           | None      
-Colon                | :               | None      
-UnitPercent          | 100%            | 100       
+Identifier           | char            | None      
+Whitespace           |                 | None      
+Backslash            | \               | None      
+Identifier           | u               | None      
+LeftBrace            | {               | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | code-point      | None      
+RightBrace           | }               | None      
+RightBrace           | }               | None      
 Newline              |                 | None      
-Identifier           | padding         | None      
-Colon                | :               | None      
-UnitLength           | 20px            | 20        
+Indent               |                 | None      
+RightBrace           | }               | None      
 Newline              |                 | None      
-Identifier           | color           | None      
+Dedent               |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Spread               | spread          | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'one'           | one       
+Comma                | ,               | None      
+SingleQuotedString   | 'two'           | two       
+Comma                | ,               | None      
+SingleQuotedString   | 'three'         | three     
+Comma                | ,               | None      
+SingleQuotedString   | 'four'          | four      
+Comma                | ,               | None      
+SingleQuotedString   | 'five'          | five      
+RightBracket         | ]               | None      
+Whitespace           |                 | None      
+As                   | as              | None      
+Identifier           | name            | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Yield                | yield           | None      
+Identifier           | digit-          | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | name            | None      
+RightBrace           | }               | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Identifier           | number-value    | None      
 Colon                | :               | None      
-Hash                 | #               | None      
-Identifier           | fff             | None      
+Identifier           | index           | None      
 Newline              |                 | None      
 RightBrace           | }               | None      
 Newline              |                 | None      
+RightBrace           | }               | None      
 Newline              |                 | None      
-Newline              |                 | None      
-Identifier           | logic           | None      
-Newline              |                 | None      
-Indent               |                 | None      
-If                   | if              | None      
-Identifier           | status          | None      
-EqualEqual           | ==              | None      
-String               | "active"        | active    
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | opacity         | None      
+Spread               | spread          | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'aries'         | aries     
+Comma                | ,               | None      
+SingleQuotedString   | 'taurus'        | taurus    
+Comma                | ,               | None      
+SingleQuotedString   | 'gemini'        | gemini    
+Comma                | ,               | None      
+SingleQuotedString   | 'cancer'        | cancer    
+Comma                | ,               | None      
+SingleQuotedString   | 'leo'           | leo       
+Comma                | ,               | None      
+SingleQuotedString   | 'virgo'         | virgo     
+Comma                | ,               | None      
+SingleQuotedString   | 'libra'         | libra     
+Comma                | ,               | None      
+SingleQuotedString   | 'scorpio'       | scorpio   
+Comma                | ,               | None      
+SingleQuotedString   | 'sagittarius'   | sagittarius
+Comma                | ,               | None      
+SingleQuotedString   | 'capricorn'     | capricorn 
+Comma                | ,               | None      
+SingleQuotedString   | 'aquarius'      | aquarius  
+Comma                | ,               | None      
+SingleQuotedString   | 'pisces'        | pisces    
+Comma                | ,               | None      
+SingleQuotedString   | 'ophiuchus'     | ophiuchus 
+RightBracket         | ]               | None      
 Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 1.0             | 1.0       
-Newline              |                 | None      
-Dedent               |                 | None      
-Else                 | else            | None      
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | opacity         | None      
+As                   | as              | None      
+Variable             | let             | None      
+Identifier           | name            | None      
 Whitespace           |                 | None      
-Number               | 0               | 0         
+LeftBrace            | {               | None      
 Newline              |                 | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Dedent               |                 | None      
-Dedent               |                 | None      
-Dedent               |                 | None      
-Identifier           | calc-result     | None      
+Local                | local           | None      
+Identifier           | code-point      | None      
 Equal                | =               | None      
-Identifier           | base-val        | None      
-Whitespace           |                 | None      
-Minus                | -               | None      
-Number               | 5               | 5         
-Whitespace           |                 | None      
-MinusMinus           | --              | None      
-Number               | 2               | 2         
+Identifier           | format          | None      
+LeftParen            | (               | None      
+String               | "{:04X}"        | {:04X}    
+Comma                | ,               | None      
+Number               | 0x2648          | 0x2648    
 Plus                 | +               | None      
+Identifier           | index           | None      
+RightParen           | )               | None      
+Newline              |                 | None      
+Yield                | yield           | None      
+Identifier           | astrological-zodiacal-sign | None      
 Minus                | -               | None      
-UnitPercent          | 10%             | 10        
+LeftBrace            | {               | None      
+Identifier           | name            | None      
+RightBrace           | }               | None      
+Identifier           | -text           | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
 Newline              |                 | None      
+Identifier           | code-point      | None      
+Colon                | :               | None      
+GraveQuotedString    | `U+             | U+        
+DollarLeftBrace      | ${              | None      
+Identifier           | code-point      | None      
+RightBrace           | }               | None      
+GraveQuotedString    | `               |           
 Newline              |                 | None      
+Identifier           | sequence        | None      
+Colon                | :               | None      
+LeftBracket          | [               | None      
+Identifier           | code-point      | None      
+Comma                | ,               | None      
+GraveQuotedString    | `FE0E`          | FE0E      
+RightBracket         | ]               | None      
 Newline              |                 | None      
+Identifier           | pos             | None      
+Colon                | :               | None      
+Identifier           | index           | None      
 Newline              |                 | None      
-Identifier           | text-data       | None      
-Equal                | =               | None      
-MultilineString      | """\n    Line 1\n    Line 2\n    """ | 
-    Line 1
-    Line 2
-    
-Dot                  | .               | None      
-Identifier           | trim            | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Spread               | spread          | None      
 LeftParen            | (               | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'c'             | c         
+Comma                | ,               | None      
+SingleQuotedString   | 's'             | s         
+RightBracket         | ]               | None      
+Comma                | ,               | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'prosgegrammeni' | prosgegrammeni
+Comma                | ,               | None      
+SingleQuotedString   | 'ypogegrammeni' | ypogegrammeni
+RightBracket         | ]               | None      
 RightParen           | )               | None      
-Dot                  | .               | None      
-Identifier           | to-upper        | None      
+Whitespace           |                 | None      
+As                   | as              | None      
+Variable             | let             | None      
 LeftParen            | (               | None      
+Identifier           | letter-case     | None      
+Comma                | ,               | None      
+Identifier           | suffix          | None      
 RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
 Newline              |                 | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Identifier           | root            | None      
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | level1          | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | level2          | None      
-Newline              |                 | None      
-Indent               |                 | None      
-Identifier           | target-node     | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Newline              |                 | None      
-Dedent               |                 | None      
-Dedent               |                 | None      
-Dedent               |                 | None      
-Identifier           | x               | None      
-Equal                | =               | None      
-Number               | 10              | 10        
-Slash                | /               | None      
-Number               | 2               | 2         
-Plus                 | +               | None      
-Number               | 5               | 5         
-Newline              |                 | None      
-Identifier           | y               | None      
-Equal                | =               | None      
-LeftParen            | (               | None      
-Number               | 5               | 5         
-Star                 | *               | None      
-Number               | 2               | 2         
-RightParen           | )               | None      
-Identifier           | z               | None      
-Newline              |                 | None      
-Private              | private         | None      
+Local                | local           | None      
 Constant             | const           | None      
-Identifier           | superstring     | None      
-Less                 | <               | None      
-Identifier           | String          | None      
-Greater              | >               | None      
+Identifier           | code-points     | None      
 Equal                | =               | None      
-String               | "this is \"super\" string" | this is \"super\" string
+LeftBracket          | [               | None      
+Number               | 1               | 1         
+Identifier           | FBC             | None      
+Comma                | ,               | None      
+Number               | 1               | 1         
+Identifier           | FB3             | None      
+RightBracket         | ]               | None      
+Newline              |                 | None      
+Yield                | yield           | None      
+Identifier           | hel_            | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | letter-case     | None      
+RightBrace           | }               | None      
+Identifier           | _let_a_alpha__  | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | suffix          | None      
+RightBrace           | }               | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Identifier           | unicode         | None      
+Colon                | :               | None      
+Identifier           | select          | None      
+LeftParen            | (               | None      
+Identifier           | code-points     | None      
+RightParen           | )               | None      
+Newline              |                 | None      
+Identifier           | symbol          | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Identifier           | letter          | None      
+Colon                | :               | None      
+Identifier           | hel_            | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | letter-case     | None      
+RightBrace           | }               | None      
+Identifier           | _let_a_alpha    | None      
+Newline              |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Indent               |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Dedent               |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Spread               | spread          | None      
+LeftParen            | (               | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'c'             | c         
+Comma                | ,               | None      
+SingleQuotedString   | 's'             | s         
+RightBracket         | ]               | None      
+Comma                | ,               | None      
+LeftBracket          | [               | None      
+SingleQuotedString   | 'prosgegrammeni' | prosgegrammeni
+Comma                | ,               | None      
+SingleQuotedString   | 'ypogegrammeni' | ypogegrammeni
+RightBracket         | ]               | None      
+Comma                | ,               | None      
+LeftBracket          | [               | None      
+Number               | 1               | 1         
+Identifier           | FBC             | None      
+Comma                | ,               | None      
+Number               | 1               | 1         
+Identifier           | FB3             | None      
+RightBracket         | ]               | None      
+RightParen           | )               | None      
+Whitespace           |                 | None      
+As                   | as              | None      
+Variable             | let             | None      
+LeftParen            | (               | None      
+Identifier           | letter-case     | None      
+Comma                | ,               | None      
+Identifier           | suffix          | None      
+Comma                | ,               | None      
+Identifier           | code-point      | None      
+RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Yield                | yield           | None      
+Identifier           | hel_            | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | letter-case     | None      
+RightBrace           | }               | None      
+Identifier           | _let_a_alpha__  | None      
+DollarLeftBrace      | ${              | None      
+Identifier           | suffix          | None      
+RightBrace           | }               | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Identifier           | unicode         | None      
+Colon                | :               | None      
+Identifier           | code-point      | None      
+Newline              |                 | None      
+Identifier           | symbol          | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+Identifier           | letter          | None      
+Colon                | :               | None      
+GraveQuotedString    | `hel_           | hel_      
+DollarLeftBrace      | ${              | None      
+Identifier           | letter-case     | None      
+RightBrace           | }               | None      
+GraveQuotedString    | _let_a_alpha`   | _let_a_alpha
+Newline              |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Indent               |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+Dedent               |                 | None      
+RightBrace           | }               | None      
 Newline              |                 | None      
 Newline              |                 | None      
 Variable             | let             | None      
 Identifier           | speed           | None      
-Whitespace           |                 | None      
-UnitSpeed            | 278mi/h         | 278       
+Less                 | <               | None      
+Identifier           | Speed           | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitSpeed            | 278ft/s         | 278       
+Newline              |                 | None      
+Variable             | let             | None      
+Identifier           | time            | None      
+Less                 | <               | None      
+Identifier           | Time            | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitTime             | 25μs            | 25        
 Newline              |                 | None      
 Variable             | let             | None      
 Identifier           | length          | None      
-Whitespace           |                 | None      
+Less                 | <               | None      
+Identifier           | Length          | None      
+Greater              | >               | None      
+Equal                | =               | None      
 UnitLength           | 25pc            | 25        
+Newline              |                 | None      
+Variable             | let             | None      
+Identifier           | degree          | None      
+Less                 | <               | None      
+Identifier           | Degree          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitDegree           | 45°             | 45        
 Newline              |                 | None      
 Constant             | const           | None      
 Identifier           | generator-power | None      
-Whitespace           |                 | None      
+Less                 | <               | None      
+Identifier           | ElectricPower   | None      
+Greater              | >               | None      
+Equal                | =               | None      
 UnitElectricPower    | 15kW            | 15        
 Newline              |                 | None      
 Constant             | const           | None      
 Identifier           | vector-shield-dimension | None      
-Whitespace           |                 | None      
+Less                 | <               | None      
+Identifier           | Dimension       | None      
+Greater              | >               | None      
+Equal                | =               | None      
 UnitDimension        | 2D              | 2         
 Newline              |                 | None      
 Constant             | const           | None      
 Identifier           | fule-energy     | None      
-Whitespace           |                 | None      
+Less                 | <               | None      
+Identifier           | Energy          | None      
+Greater              | >               | None      
+Equal                | =               | None      
 UnitEnergy           | 1.5MJ           | 1.5       
 Newline              |                 | None      
-Newline              |                 | None      
-Variable             | let             | None      
-Identifier           | string          | None      
-Whitespace           |                 | None      
-String               | "string"        | string    
-Newline              |                 | None      
-Variable             | let             | None      
-Identifier           | string          | None      
-Whitespace           |                 | None      
-SingleQuotedString   | 'string'        | string    
-Newline              |                 | None      
-Variable             | let             | None      
-Identifier           | string          | None      
-Whitespace           |                 | None      
-GraveQuotedString    | `string`        | string    
-Newline              |                 | None      
-Variable             | let             | None      
-Identifier           | interpolated-string | None      
-Whitespace           |                 | None      
-String               | "string with    | string with 
-DollarLeftBrace      | ${              | None      
-Identifier           | first-word      | None      
-RightBrace           | }               | None      
-String               |  and            |  and      
-DollarLeftBrace      | ${              | None      
-Identifier           | second-word     | None      
-RightBrace           | }               | None      
-String               | , \${escaped}"  | , \${escaped}
-Newline              |                 | None      
-Newline              |                 | None      
 Constant             | const           | None      
-Identifier           | first-word      | None      
-Whitespace           |                 | None      
-Identifier           | snow            | None      
-Newline              |                 | None      
-Constant             | const           | None      
-Identifier           | second-word     | None      
+Identifier           | temperature     | None      
+Less                 | <               | None      
+Identifier           | Temperature     | None      
+Greater              | >               | None      
 Equal                | =               | None      
-Identifier           | fall            | None      
+UnitTemperature      | 25°C            | 25        
 Newline              |                 | None      
 Constant             | const           | None      
-Identifier           | winter-         | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | first-word      | None      
-RightBrace           | }               | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | second-word     | None      
-RightBrace           | }               | None      
-Hash                 | #               | None      
-Identifier           | dbebed          | None      
+Identifier           | temperature     | None      
+Less                 | <               | None      
+Identifier           | Temperature     | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitTemperature      | 25K             | 25        
 Newline              |                 | None      
 Constant             | const           | None      
-Identifier           | winter-         | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | first-word      | None      
-RightBrace           | }               | None      
-Identifier           | -               | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | second-word     | None      
-RightBrace           | }               | None      
-Hash                 | #               | None      
-Identifier           | dbebed          | None      
+Identifier           | resistance      | None      
+Less                 | <               | None      
+Identifier           | ElectricResistance | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitElectricResistance | 10_000MΩ        | 10_000    
 Newline              |                 | None      
 Constant             | const           | None      
-Identifier           | winter-         | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | first-word      | None      
-RightBrace           | }               | None      
-Identifier           | _               | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | second-word     | None      
-RightBrace           | }               | None      
-Hash                 | #               | None      
-Identifier           | dbebed          | None      
+Identifier           | resistance      | None      
+Less                 | <               | None      
+Identifier           | ElectricResistance | None      
+Greater              | >               | None      
+Equal                | =               | None      
+UnitElectricResistance | 10000kΩ         | 10000     
 Newline              |                 | None      
-Identifier           | winter-         | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | a               | None      
-RightBrace           | }               | None      
-Identifier           | -               | None      
-DollarLeftBrace      | ${              | None      
-Identifier           | b               | None      
-RightBrace           | }               | None      
-Identifier           | value           | None      
+Constant             | const           | None      
+Identifier           | number2         | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+Number               | 0b1011110011    | 0b1011110011
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | number8         | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+Number               | 0o071           | 0o071     
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | number16        | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+Number               | 0x348FABD1      | 0x348FABD1
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | number32        | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+Number               | 0tL1FF          | 0tL1FF    
+Newline              |                 | None      
+Constant             | const           | None      
+Identifier           | number32        | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Equal                | =               | None      
+Number               | 0cZYX           | 0cZYX     
 Newline              |                 | None      
 EOF                  |                 | None      

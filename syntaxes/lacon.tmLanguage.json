@@ -114,9 +114,11 @@
     },
     "numbers": {
       "patterns": [
-        { "name": "constant.numeric.hex.lacon", "match": "\\b0[xX][0-9a-fA-F_]+\\b" },
         { "name": "constant.numeric.binary.lacon", "match": "\\b0[bB][01_]+\\b" },
         { "name": "constant.numeric.octal.lacon", "match": "\\b0[oO][0-7_]+\\b" },
+        { "name": "constant.numeric.hex.lacon", "match": "\\b0[xX][0-9a-fA-F_]+\\b" },
+        { "name": "constant.numeric.base32.lacon", "match": "\\b0[tT][0-9a-vA-V_]+\\b" },
+        { "name": "constant.numeric.base32.crockford.lacon", "match": "\\b0[cC][0-9a-zA-Z_&&[^iIlLoOuU]]+\\b" },
         { "name": "constant.numeric.float.lacon", "match": "\\b\\d[0-9_]*\\.\\d[0-9_]*([eE][+-]?\\d[0-9_]*)?\\b" },
         { "name": "constant.numeric.integer.lacon", "match": "\\b\\d[0-9_]*\\b" }
       ]
@@ -124,7 +126,16 @@
     "units": {
       "patterns": [
         {
-          "match": "(\\d+(?:\\.\\d+)?)(\u00B0)(C|F|N|D|L|W|Ra|Ro|Re|Da|H)\\b",
+          "comment": "1. Проценты",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(%)",
+          "captures": {
+            "1": { "name": "constant.numeric.lacon" },
+            "2": { "name": "keyword.other.unit.percent.lacon" }
+          }
+        },
+        {
+          "comment": "2. Температура с символом градуса (25°C, 25°Da)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(°)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" },
@@ -132,24 +143,37 @@
           }
         },
         {
-          "match": "(\\d+(?:\\.\\d+)?)(m/s|m/h|km/s|km/h|ft/s|mi/h)",
+          "comment": "3. Температура с префиксом deg (25degC)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(deg)(C|F|K|R|Ra|Re|Ro|De|N|Le|D|W|H|Da)\\b",
+          "captures": {
+            "1": { "name": "constant.numeric.lacon" },
+            "2": { "name": "keyword.other.unit.lacon" },
+            "3": { "name": "keyword.other.unit.lacon" }
+          }
+        },
+        {
+          "comment": "4. Одиночные градусы угла и температуры (25deg, 25°, 273K)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(deg|°|rad|K)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" }
           }
         },
         {
-          "match": "(\\d+(?:\\.\\d+)?)(Hz|kHz|MHz|GHz|THz|b|B|Kb|MB|GB|TB|deg|rad|µm|μm|nm|mm|cm|m|km|Mm|ft|mi|em|rem|pt|in|px|pc|ns|μs|µs|ms|sec|min|hour|day|week|month|year|D|ng|μg|mg|g|kg|t|kt|lb|oz|fps|mph|kn|degC|degF|degN|degD|degL|degW|degRa|degRo|degRe|degDa|degH|K|V|mV|kV|MV|A|mA|uA|μA|kA|C|mC|uC|μC|ohm|Ω|kohm|Mohm|S|mS|uS|μS|F|uF|μF|nF|pF|W|mW|kW|MW|GW|Pa|hPa|kPa|MPa|bar|mbar|psi|J|kJ|MJ|cal|kcal|Wh|kWh)\\b",
+          "comment": "5. Сложные скорости (km/h, m/s и т.д.)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)([a-z]+/[a-z]+)",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
             "2": { "name": "keyword.other.unit.lacon" }
           }
         },
         {
-          "match": "(\\d+(?:\\.\\d+)?)(%)",
+          "comment": "6. Универсальное правило СИ (префикс + база)",
+          "match": "(\\b\\d[0-9_]*(?:\\.[0-9_]+)?)(?:(da|h|k|M|G|T|P|E|Z|Y|R|Q|d|c|m|μ|µ|u|n|p|f|a|z|y|r|q))?(Hz|m|g|V|A|W|Ω|ohm|C|S|F|J|Pa|b|B|s|sec|min|hour|day|week|month|year|D|t|lb|oz|kn|px|   em|rem|pt|in|pc|cal|Wh|psi|bar)\\b",
           "captures": {
             "1": { "name": "constant.numeric.lacon" },
-            "2": { "name": "keyword.other.unit.percent.lacon" }
+            "2": { "name": "keyword.other.unit.prefix.lacon" },
+            "3": { "name": "keyword.other.unit.base.lacon" }
           }
         }
       ]

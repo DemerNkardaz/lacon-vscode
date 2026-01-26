@@ -4,6 +4,7 @@ use crate::lexer::operators::match_operator;
 use crate::lexer::position::Position;
 use crate::lexer::token::Token;
 use crate::lexer::token_type::TokenType;
+use crate::utils::unit::get_unit_type;
 
 pub struct Scanner {
     source: Vec<char>,
@@ -126,14 +127,13 @@ impl Scanner {
             '-' => {
                 self.had_whitespace = false;
                 let next = self.peek();
-                let next_next = self.peek_next(); // Здесь peek_next() это current + 1
+                let next_next = self.peek_next();
 
                 if next == Some('>') {
                     self.handle_operator(c);
                 } else if next.map_or(false, |n| n.is_alphabetic() || n == '_')
                     || (next == Some('$') && next_next == Some('{'))
                 {
-                    // Если видим -${, то дефис считается началом идентификатора
                     self.scan_identifier();
                 } else {
                     self.handle_operator(c);
@@ -156,30 +156,24 @@ impl Scanner {
     }
 
     fn scan_identifier(&mut self) {
-        // Мы попадаем сюда, когда ПЕРВЫЙ символ уже поглощен (через advance)
-        // Но цикл while let Some(c) = self.peek() корректно обработает последующие символы
         while let Some(c) = self.peek() {
-            // Остановка перед началом интерполяции
             if c == '$' && self.peek_next() == Some('{') {
                 break;
             }
 
             if c == '-' {
-                let next = self.peek_next(); // Это символ после '-'
-                let next_next = self.peek_at(2); // Это символ через один после '-'
+                let next = self.peek_next();
+                let next_next = self.peek_at(2);
 
-                // Проверяем: прилипает ли дефис к ID?
-                // Вариант А: за ним буква/цифра (apple-word)
                 let is_normal_id_part =
                     next.map_or(false, |n| n.is_alphanumeric()) && next != Some('>');
-                // Вариант Б: за ним сразу интерполяция (winter-${)
                 let is_link_to_interpolation = next == Some('$') && next_next == Some('{');
 
                 if is_normal_id_part || is_link_to_interpolation {
-                    self.advance(); // Поглощаем '-'
-                    continue; // Продолжаем цикл сканирования ID
+                    self.advance();
+                    continue;
                 } else {
-                    break; // Дефис — это отдельный оператор, выходим
+                    break;
                 }
             }
 
@@ -195,25 +189,58 @@ impl Scanner {
         self.add_token(t_type);
     }
 
-    // Вспомогательный метод для заглядывания вперед
     fn peek_at(&self, distance: usize) -> Option<char> {
         self.source.get(self.current + distance).copied()
     }
 
     fn scan_number(&mut self) {
-        while self.peek().map_or(false, |c| c.is_digit(10)) {
-            self.advance();
+        let mut radix: u32 = 10;
+
+        // Проверка префиксов
+        if self.source[self.start] == '0' {
+            if let Some(second) = self.peek() {
+                match second.to_ascii_lowercase() {
+                    'x' => {
+                        radix = 16;
+                        self.advance();
+                    }
+                    'b' => {
+                        radix = 2;
+                        self.advance();
+                    }
+                    'o' => {
+                        radix = 8;
+                        self.advance();
+                    }
+                    't' => {
+                        radix = 32;
+                        self.advance();
+                    }
+                    'c' => {
+                        radix = 33;
+                        self.advance();
+                    } // Используем 33 как спец-маркер для Crockford
+                    _ => {} // Остаемся в 10-ричной (просто ноль)
+                }
+            }
         }
 
-        if self.peek() == Some('.') && self.peek_next().map_or(false, |c| c.is_digit(10)) {
-            self.advance();
-            while self.peek().map_or(false, |c| c.is_digit(10)) {
-                self.advance();
+        // Поглощение основной части числа
+        self.consume_digits_with_underscore(radix);
+
+        // Дробная часть (только для десятичных чисел)
+        if radix == 10 && self.peek() == Some('.') {
+            if let Some(next) = self.peek_next() {
+                if next.is_digit(10) {
+                    self.advance(); // Поглощаем '.'
+                    self.consume_digits_with_underscore(10);
+                }
             }
         }
 
         let value_literal = self.get_slice(self.start, self.current);
 
+        // Обработка суффиксов (единиц измерения)
         if let Some(c) = self.peek() {
             if c == '%' {
                 self.advance();
@@ -221,11 +248,13 @@ impl Scanner {
                 return;
             }
 
+            // Проверяем, является ли следующий символ началом юнита
             if c.is_alphabetic() || c == 'µ' || c == 'μ' || c == 'Ω' || c == '\u{00B0}' {
                 let suffix_start = self.current;
                 let pos_before_suffix = self.position;
 
                 while let Some(nc) = self.peek() {
+                    // Юниты могут содержать буквы, цифры, греческие символы и дробную черту
                     if nc.is_alphanumeric()
                         || nc == '/'
                         || nc == 'µ'
@@ -240,47 +269,13 @@ impl Scanner {
                 }
 
                 let suffix = self.get_slice(suffix_start, self.current);
-                let unit_type = match suffix.as_str() {
-                    "Hz" | "kHz" | "MHz" | "GHz" | "THz" => Some(TokenType::UnitFrequency),
-                    "b" | "B" | "Kb" | "MB" | "GB" | "TB" => Some(TokenType::UnitSize),
-                    "deg" | "rad" | "\u{00B0}" => Some(TokenType::UnitDegree),
-                    "µm" | "μm" | "nm" | "mm" | "cm" | "m" | "km" | "Mm" | "ft" | "mi" | "em"
-                    | "rem" | "pt" | "in" | "px" | "pc" => Some(TokenType::UnitLength),
-                    "ns" | "μs" | "µs" | "ms" | "sec" | "min" | "hour" | "day" | "week"
-                    | "month" | "year" => Some(TokenType::UnitTime),
-                    "D" => Some(TokenType::UnitDimension),
-                    "ng" | "μg" | "mg" | "g" | "kg" | "t" | "kt" | "lb" | "oz" => {
-                        Some(TokenType::UnitWeight)
-                    }
-                    "m/s" | "m/h" | "km/s" | "km/h" | "fps" | "ft/s" | "mph" | "mi/h" | "kn" => {
-                        Some(TokenType::UnitSpeed)
-                    }
-                    "degC" | "degF" | "degN" | "degD" | "degL" | "degW" | "degRa" | "degRo"
-                    | "degRe" | "degDa" | "degH" | "K" | "\u{00B0}C" | "\u{00B0}F"
-                    | "\u{00B0}N" | "\u{00B0}D" | "\u{00B0}L" | "\u{00B0}W" | "\u{00B0}Ra"
-                    | "\u{00B0}Ro" | "\u{00B0}Re" | "\u{00B0}Da" | "\u{00B0}H" => {
-                        Some(TokenType::UnitTemperature)
-                    }
-                    "V" | "mV" | "kV" | "MV" => Some(TokenType::UnitElectricVoltage),
-                    "A" | "mA" | "uA" | "μA" | "kA" => Some(TokenType::UnitElectricCurrent),
-                    "C" | "mC" | "uC" | "μC" => Some(TokenType::UnitElectricCharge),
-                    "ohm" | "Ω" | "kohm" | "Mohm" => Some(TokenType::UnitElectricResistance),
-                    "S" | "mS" | "uS" | "μS" => Some(TokenType::UnitElectricConductance),
-                    "F" | "uF" | "μF" | "nF" | "pF" => Some(TokenType::UnitElectricCapacitance),
-                    "W" | "mW" | "kW" | "MW" | "GW" => Some(TokenType::UnitElectricPower),
-                    "Pa" | "hPa" | "kPa" | "MPa" | "bar" | "mbar" | "psi" => {
-                        Some(TokenType::UnitPressure)
-                    }
-                    "J" | "kJ" | "MJ" | "cal" | "kcal" | "Wh" | "kWh" => {
-                        Some(TokenType::UnitEnergy)
-                    }
-                    _ => None,
-                };
+                let unit_type = get_unit_type(&suffix);
 
                 if let Some(t_type) = unit_type {
                     self.add_token_with_literal(t_type, value_literal);
                     return;
                 } else {
+                    // Если это не юнит, откатываемся назад (это может быть начало другого токена)
                     self.current = suffix_start;
                     self.position = pos_before_suffix;
                 }
@@ -290,6 +285,44 @@ impl Scanner {
         self.add_token_with_literal(TokenType::Number, value_literal);
     }
 
+    /// Вспомогательная функция для поглощения цифр и разделителя '_'
+    fn consume_digits_with_underscore(&mut self, radix: u32) {
+        while let Some(c) = self.peek() {
+            if c == '_' {
+                self.advance();
+                continue;
+            }
+
+            let is_valid = match radix {
+                2 => c == '0' || c == '1',
+                8 => c >= '0' && c <= '7',
+                10 => c.is_digit(10),
+                16 => c.is_digit(16),
+                32 => {
+                    c.is_digit(10)
+                        || (c.to_ascii_lowercase() >= 'a' && c.to_ascii_lowercase() <= 'v')
+                }
+                33 => {
+                    // Crockford: 0-9, A-Z кроме I, L, O, U
+                    let lower = c.to_ascii_lowercase();
+                    c.is_digit(10)
+                        || (lower >= 'a'
+                            && lower <= 'z'
+                            && lower != 'i'
+                            && lower != 'l'
+                            && lower != 'o'
+                            && lower != 'u')
+                }
+                _ => false,
+            };
+
+            if is_valid {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+    }
     fn scan_string(&mut self, quote: char) {
         let is_multiline = quote == '"' && self.match_char('"') && self.match_char('"');
         self.continue_string_scan(quote, is_multiline);
