@@ -238,7 +238,7 @@
         { "name": "variable.language.item.lacon", "match": "\\b(items?)\\b" },
         { "name": "variable.language.key.lacon", "match": "\\b(keys?|k)\\b" },
         { "name": "variable.language.index.lacon", "match": "\\b(index|indexes|i|j)\\b" },
-        { "name": "variable.language.flag.lacon", "match": "\\b(flags?)\\b" },
+        { "name": "variable.language.flag.lacon", "match": "\\b(flags?|f)\\b" },
         { "name": "variable.language.xyz.lacon", "match": "\\b(x|y|z)\\b" },
         { "name": "variable.language.other.lacon", "match": "\\b(t|c|r|n|m)\\b" },
         { "name": "constant.other.placeholder.lacon", "match": "\\b_\\b" }
