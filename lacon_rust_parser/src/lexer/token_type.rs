@@ -283,6 +283,8 @@ define_token_type! {
             Dollar,  // $ \\ SpecialIdentifier
             DollarEqual, // $= \\ SpecialAssign
 
+						Unit,
+
         },
         units: {
             UnitDegree, // deg \\ AngleDegree
