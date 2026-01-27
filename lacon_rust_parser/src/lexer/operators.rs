@@ -25,6 +25,10 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
                 token_type: TokenType::ColonColon,
                 consume_count: 1,
             },
+            Some('=') => OpMatch {
+                token_type: TokenType::ColonEqual,
+                consume_count: 1,
+            },
             _ => simple(TokenType::Colon),
         },
 
@@ -51,11 +55,27 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
             },
             _ => simple(TokenType::Tilde),
         },
-        '@' => simple(TokenType::At),
-        '#' => simple(TokenType::Hash),
+        '@' => match c2 {
+            Some('=') => OpMatch {
+                token_type: TokenType::AtEqual,
+                consume_count: 1,
+            },
+            _ => simple(TokenType::At),
+        },
+        '#' => match c2 {
+            Some('=') => OpMatch {
+                token_type: TokenType::HashEqual,
+                consume_count: 1,
+            },
+            _ => simple(TokenType::Hash),
+        },
         '$' => match c2 {
             Some('{') => OpMatch {
                 token_type: TokenType::DollarLeftBrace,
+                consume_count: 1,
+            },
+            Some('=') => OpMatch {
+                token_type: TokenType::DollarEqual,
                 consume_count: 1,
             },
             _ => simple(TokenType::Dollar),
@@ -65,6 +85,10 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
         '+' => match c2 {
             Some('+') => OpMatch {
                 token_type: TokenType::PlusPlus,
+                consume_count: 1,
+            },
+            Some('-') => OpMatch {
+                token_type: TokenType::PlusMinus,
                 consume_count: 1,
             },
             Some('=') => OpMatch {
@@ -98,6 +122,10 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
         '/' => match c2 {
             Some('|') if c3 == Some('\\') => OpMatch {
                 token_type: TokenType::LineComment,
+                consume_count: 2,
+            },
+            Some('/') if c3 == Some('=') => OpMatch {
+                token_type: TokenType::SlashSlashEqual,
                 consume_count: 2,
             },
             Some('*') => OpMatch {
@@ -158,6 +186,14 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
             _ => simple(TokenType::Bang),
         },
         '>' => match c2 {
+            Some('>') if c3 == Some('=') => OpMatch {
+                token_type: TokenType::LessLessEqual,
+                consume_count: 2,
+            },
+            Some('>') => OpMatch {
+                token_type: TokenType::LessLess,
+                consume_count: 1,
+            },
             Some('=') => OpMatch {
                 token_type: TokenType::GreaterEqual,
                 consume_count: 1,
@@ -165,6 +201,14 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
             _ => simple(TokenType::Greater),
         },
         '<' => match c2 {
+            Some('<') if c3 == Some('=') => OpMatch {
+                token_type: TokenType::LessLessEqual,
+                consume_count: 2,
+            },
+            Some('<') => OpMatch {
+                token_type: TokenType::LessLess,
+                consume_count: 1,
+            },
             Some('=') => OpMatch {
                 token_type: TokenType::LessEqual,
                 consume_count: 1,
@@ -214,12 +258,32 @@ pub fn match_operator(c1: char, c2: Option<char>, c3: Option<char>) -> OpMatch {
                 token_type: TokenType::DotDot,
                 consume_count: 1,
             },
+            Some('+') => OpMatch {
+                token_type: TokenType::DotPlus,
+                consume_count: 1,
+            },
+            Some('-') => OpMatch {
+                token_type: TokenType::DotMinus,
+                consume_count: 1,
+            },
             Some('=') => OpMatch {
                 token_type: TokenType::DotEqual,
                 consume_count: 1,
             },
             _ => simple(TokenType::Dot),
         },
+
+        // Спец-символы юникода
+        // Monus
+        '\u{2238}' => simple(TokenType::DotMinus),
+        '\u{2214}' => simple(TokenType::DotPlus),
+        '\u{00B1}' => simple(TokenType::PlusMinus),
+        '\u{00D7}' => simple(TokenType::Star),
+        '\u{00F7}' => simple(TokenType::Slash),
+        '\u{2260}' => simple(TokenType::BangEqual),
+        '\u{2264}' => simple(TokenType::LessEqual),
+        '\u{2265}' => simple(TokenType::GreaterEqual),
+        '\u{2263}' => simple(TokenType::EqualEqualEqual),
 
         _ => simple(TokenType::Unknown),
     }

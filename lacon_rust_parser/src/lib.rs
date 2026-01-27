@@ -37,6 +37,9 @@ mod tests {
     #[test]
     fn test_lexer_to_file() {
         let source = r#"
+25 ∸ 100
+string ≣ string
+
 generate (0x4E3 .. -10) as local let code-point {
 	yield unicode-${code-point} {
 		char \u{${code-point}}
