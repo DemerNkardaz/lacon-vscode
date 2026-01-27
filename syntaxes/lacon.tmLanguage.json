@@ -183,6 +183,7 @@
     "declaration-keywords": {
       "patterns": [
         { "name": "storage.type.variable.lacon", "match": "\\b(let|variable|var)\\b" },
+        { "name": "storage.type.structure.lacon", "match": "\\b(struct|structure)\\b" },
         { "name": "storage.type.constant.lacon", "match": "\\b(const|constant)\\b" },
         { "name": "storage.type.container.lacon", "match": "\\b(cont|container)\\b" }
       ]
@@ -198,12 +199,13 @@
         { "name": "keyword.control.async.lacon", "match": "(?<!\\.)\\b(await|async|coroutine|defer)\\b" },
         { "name": "keyword.operator.expression.lacon", "match": "(?<!\\.)\\b(contains|where|with|as|is|in|of|[eE]xtends|[iI]mplements)\\b" },
         { "name": "support.class.lacon", "match": "(?<!\\.)\\b(new)\\b" },
-        { "name": "support.class.lacon", "match": "(?<!\\.)\\b([mM]arker)\\b" }
+        { "name": "support.class.lacon", "match": "(?<!\\.)\\b([mM]arker)\\b" },
+        { "name": "entity.name.section.lacon", "match": "\\b([gGsS]et)\\b" }
       ]
     },
     "storage-modifiers": {
       "patterns": [
-        { "name": "storage.type.lacon", "match": "\\b(class|interface|enum|function|procedure|[tT]ype|alias)\\b" },
+        { "name": "storage.type.lacon", "match": "\\b(class|interface|enum|func|function|proc|procedure|[tT]ype|alias)\\b" },
         { "name": "support.type.lacon", "match": "\\b(auto)\\b" },
         { "name": "storage.modifier.oo.lacon", "match": "\\b(static|virtual|abstract|override|final)\\b" }
       ]
@@ -230,7 +232,7 @@
         { "name": "constant.language.boolean.lacon", "match": "\\b(true|false)\\b" },
         { "name": "constant.language.null.lacon", "match": "\\b(nil|undefined)\\b" },
         { "name": "support.type.lacon", "match": "\\b(none)\\b" },
-        { "name": "variable.language.lacon", "match": "\\b(this|super|here)\\b" },
+        { "name": "variable.language.lacon", "match": "\\b(this|super|root|parent|here)\\b" },
         { "name": "variable.language.value.lacon", "match": "\\b(values?|v|vals?)\\b" },
         { "name": "variable.language.method.lacon", "match": "\\b(methods?)\\b" },
         { "name": "variable.language.input.lacon", "match": "\\b(inputs?)\\b" },
@@ -239,6 +241,7 @@
         { "name": "variable.language.data.lacon", "match": "\\b(data)\\b" },
         { "name": "variable.language.each.lacon", "match": "\\b(each)\\b" },
         { "name": "variable.language.item.lacon", "match": "\\b(items?)\\b" },
+        { "name": "variable.language.element.lacon", "match": "\\b(elements?|elems?)\\b" },
         { "name": "variable.language.key.lacon", "match": "\\b(keys?|k)\\b" },
         { "name": "variable.language.index.lacon", "match": "\\b(index|indexes|i|j)\\b" },
         { "name": "variable.language.flag.lacon", "match": "\\b(flags?|f)\\b" },

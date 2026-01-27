@@ -7,118 +7,127 @@ lazy_static! {
     pub static ref KEYWORDS: HashMap<&'static str, TokenType> = {
         let mut m = HashMap::new();
 
+        // Вспомогательная функция для регистрации синонимов одного типа
+        let mut add = |aliases: &[&'static str], token_type: TokenType| {
+            for &alias in aliases {
+                m.insert(alias, token_type.clone());
+            }
+        };
+
         // --- Управление потоком (Control Flow) ---
-        m.insert("if",         TokenType::If);
-        m.insert("else",       TokenType::Else);
-        m.insert("elif",       TokenType::Elif);
-        m.insert("match",      TokenType::Match);
-        m.insert("case",       TokenType::Case);
-        m.insert("default",    TokenType::Default);
-        m.insert("switch",     TokenType::Switch);
-        m.insert("for",        TokenType::For);
-        m.insert("while",      TokenType::While);
-        m.insert("until",      TokenType::Until);
-        m.insert("spread",      TokenType::Spread);
-        m.insert("generate",      TokenType::Generate);
-        m.insert("combine",    TokenType::Combine);
-        m.insert("enumerate",  TokenType::Enumerate);
-        m.insert("filter",      TokenType::Filter);
-        m.insert("flatten",    TokenType::Flatten);
-        m.insert("repeat",     TokenType::Repeat);
-        m.insert("transform",  TokenType::Transform);
-        m.insert("transpose",  TokenType::Transpose);
-        m.insert("loop",       TokenType::Loop);
-        m.insert("break",      TokenType::Break);
-        m.insert("continue",   TokenType::Continue);
-        m.insert("return",     TokenType::Return);
-        m.insert("yield",      TokenType::Yield);
-        m.insert("exit",       TokenType::Exit);
-        m.insert("cancel",     TokenType::Cancel);
-        m.insert("defer",      TokenType::Defer);
+        add(&["if"],                           TokenType::If);
+        add(&["else"],                         TokenType::Else);
+        add(&["elif"],                         TokenType::Elif);
+        add(&["match"],                        TokenType::Match);
+        add(&["case"],                         TokenType::Case);
+        add(&["default"],                      TokenType::Default);
+        add(&["switch"],                       TokenType::Switch);
+        add(&["for"],                          TokenType::For);
+        add(&["while"],                        TokenType::While);
+        add(&["until"],                        TokenType::Until);
+        add(&["spread"],                       TokenType::Spread);
+        add(&["generate"],                     TokenType::Generate);
+        add(&["combine"],                      TokenType::Combine);
+        add(&["enumerate"],                    TokenType::Enumerate);
+        add(&["filter"],                       TokenType::Filter);
+        add(&["flatten"],                      TokenType::Flatten);
+        add(&["repeat"],                       TokenType::Repeat);
+        add(&["transform"],                    TokenType::Transform);
+        add(&["transpose"],                    TokenType::Transpose);
+        add(&["loop"],                         TokenType::Loop);
+        add(&["break"],                        TokenType::Break);
+        add(&["continue"],                     TokenType::Continue);
+        add(&["return"],                       TokenType::Return);
+        add(&["yield"],                        TokenType::Yield);
+        add(&["exit"],                         TokenType::Exit);
+        add(&["cancel"],                       TokenType::Cancel);
+        add(&["defer"],                        TokenType::Defer);
 
         // --- Обработка исключений ---
-        m.insert("try",        TokenType::Try);
-        m.insert("catch",      TokenType::Catch);
-        m.insert("finally",    TokenType::Finally);
-        m.insert("throw",      TokenType::Throw);
+        add(&["try"],                          TokenType::Try);
+        add(&["catch"],                        TokenType::Catch);
+        add(&["finally"],                      TokenType::Finally);
+        add(&["throw"],                        TokenType::Throw);
 
         // --- Асинхронность ---
-        m.insert("async",      TokenType::Async);
-        m.insert("await",      TokenType::Await);
-        m.insert("coroutine",  TokenType::Coroutine);
+        add(&["async"],                        TokenType::Async);
+        add(&["await"],                        TokenType::Await);
+        add(&["coroutine"],                    TokenType::Coroutine);
 
         // --- Объявления и Структура ---
-        m.insert("class",      TokenType::Class);
-        m.insert("interface",  TokenType::Interface);
-        m.insert("enum",       TokenType::Enum);
-        m.insert("cont",       TokenType::Container);
-        m.insert("function",   TokenType::Function);
-        m.insert("procedure",  TokenType::Procedure);
-        m.insert("let",        TokenType::Variable);
-        m.insert("const",      TokenType::Constant);
-        m.insert("import",     TokenType::Import);
-        m.insert("export",     TokenType::Export);
-        m.insert("from",       TokenType::From);
-        m.insert("include",    TokenType::Include);
-        m.insert("new",        TokenType::New);
+        add(&["class"],                        TokenType::Class);
+        add(&["interface"],                    TokenType::Interface);
+        add(&["enum"],                         TokenType::Enum);
+        add(&["cont", "container"],                         TokenType::Container);
+        add(&["func", "function"],             TokenType::Function);
+        add(&["proc", "procedure"],                    TokenType::Procedure);
+        add(&["let", "var", "variable"],       TokenType::Variable);
+        add(&["const", "constant"],            TokenType::Constant);
+        add(&["struct", "structure"],          TokenType::Structure);
+        add(&["import"],                       TokenType::Import);
+        add(&["export"],                       TokenType::Export);
+        add(&["from"],                         TokenType::From);
+        add(&["include"],                      TokenType::Include);
+        add(&["new"],                          TokenType::New);
 
         // --- Типовая система ---
-        m.insert("type",       TokenType::Type);
-        m.insert("auto",       TokenType::Auto);
-        m.insert("alias",      TokenType::Alias);
-        m.insert("as",         TokenType::As);
-        m.insert("is",         TokenType::Is);
-        m.insert("extends",    TokenType::Extends);
-        m.insert("implements", TokenType::Implements);
-        m.insert("in",         TokenType::In);
-        m.insert("of",         TokenType::Of);
-        m.insert("where",      TokenType::Where);
-        m.insert("when",       TokenType::When);
-        m.insert("contains",   TokenType::Contains);
-        m.insert("with",       TokenType::With);
+        add(&["type"],                         TokenType::Type);
+        add(&["auto"],                         TokenType::Auto);
+        add(&["alias"],                        TokenType::Alias);
+        add(&["as"],                           TokenType::As);
+        add(&["is"],                           TokenType::Is);
+        add(&["extends"],                      TokenType::Extends);
+        add(&["implements"],                   TokenType::Implements);
+        add(&["in"],                           TokenType::In);
+        add(&["of"],                           TokenType::Of);
+        add(&["where"],                        TokenType::Where);
+        add(&["when"],                         TokenType::When);
+        add(&["contains"],                     TokenType::Contains);
+        add(&["with"],                         TokenType::With);
 
         // --- Литералы-константы ---
-        m.insert("true",       TokenType::True);
-        m.insert("false",      TokenType::False);
-        m.insert("nil",        TokenType::Nil);
-        m.insert("none",       TokenType::None);
-        m.insert("undefined",  TokenType::Undefined);
-        m.insert("this",       TokenType::This);
-        m.insert("super",      TokenType::Super);
-        m.insert("here",       TokenType::Here);
+        add(&["true"],                         TokenType::True);
+        add(&["false"],                        TokenType::False);
+        add(&["nil"],                          TokenType::Nil);
+        add(&["none"],                         TokenType::None);
+        add(&["undefined"],                    TokenType::Undefined);
+        add(&["this"],                         TokenType::This);
+        add(&["super"],                        TokenType::Super);
+        add(&["root"],                        TokenType::Root);
+        add(&["parent"],                        TokenType::Parent);
+        add(&["here"],                         TokenType::Here);
 
         // --- Модификаторы доступа и ООП ---
-        m.insert("public",     TokenType::Public);
-        m.insert("private",    TokenType::Private);
-        m.insert("protected",  TokenType::Protected);
-        m.insert("internal",   TokenType::Internal);
-        m.insert("external",   TokenType::External);
-        m.insert("global",     TokenType::Global);
-        m.insert("local",      TokenType::Local);
-        m.insert("static",     TokenType::Static);
-        m.insert("virtual",    TokenType::Virtual);
-        m.insert("abstract",   TokenType::Abstract);
-        m.insert("override",   TokenType::Override);
-        m.insert("final",      TokenType::Final);
+        add(&["public"],                       TokenType::Public);
+        add(&["private"],                      TokenType::Private);
+        add(&["protected"],                    TokenType::Protected);
+        add(&["internal"],                     TokenType::Internal);
+        add(&["external"],                     TokenType::External);
+        add(&["global"],                       TokenType::Global);
+        add(&["local"],                        TokenType::Local);
+        add(&["static"],                       TokenType::Static);
+        add(&["virtual"],                      TokenType::Virtual);
+        add(&["abstract"],                     TokenType::Abstract);
+        add(&["override"],                     TokenType::Override);
+        add(&["final"],                        TokenType::Final);
 
         // --- Метапрограммирование ---
-        m.insert("meta",       TokenType::Meta);
-        m.insert("reflect",    TokenType::Reflect);
-        m.insert("attribute",  TokenType::Attribute);
+        add(&["meta"],                         TokenType::Meta);
+        add(&["reflect"],                      TokenType::Reflect);
+        add(&["attribute"],                    TokenType::Attribute);
 
         // --- Логические операторы (текстовые) ---
-        m.insert("and",        TokenType::And);
-        m.insert("or",         TokenType::Or);
-        m.insert("not",        TokenType::Not);
+        add(&["and"],                          TokenType::And);
+        add(&["or"],                           TokenType::Or);
+        add(&["not"],                          TokenType::Not);
 
-        // --- Единицы измерения (как зарезервированные слова) ---
-        m.insert("deg",        TokenType::UnitDegree);
-        m.insert("rad",        TokenType::UnitRadian);
+        // --- Единицы измерения ---
+        add(&["deg"],                          TokenType::UnitDegree);
+        add(&["rad"],                          TokenType::UnitRadian);
 
-        // --- Константы ---
-        m.insert("infinity",        TokenType::NumberInfinity);
-
-        m.insert("Marker", TokenType::Marker);
+        // --- Константы и Маркеры ---
+        add(&["infinity", "Infinity"],                     TokenType::NumberInfinity);
+        add(&["Marker"],                       TokenType::Marker);
 
         m
     };

@@ -165,6 +165,8 @@ pub enum TokenType {
     Variable, // var  \\ VariableDecl
     Constant, // const\\ ConstantDecl
 
+    Structure, // struct \\ StructureDecl
+
     Import,  // import \\ ImportModule
     Export,  // export \\ ExportSymbol
     From,    // from \\ ImportSource
@@ -200,9 +202,11 @@ pub enum TokenType {
     // ─────────────────────────────────────────────
     // Контекст объекта
     // ─────────────────────────────────────────────
-    This,  // this \\ CurrentInstance
-    Super, // super\\ BaseInstance
-    Here,  // here \\ CurrentLocation
+    This,   // this \\ CurrentInstance
+    Super,  // super\\ BaseInstance
+    Root,   // root \\ ObjectRoot
+    Parent, // parent \\ CurrentParent
+    Here,   // here \\ CurrentLocation
 
     // ─────────────────────────────────────────────
     // Модификаторы доступа и ОО

@@ -2,6 +2,72 @@ TYPE                 | LEXEME          | LITERAL
 --------------------------------------------------
 BOF                  |                 | None      
 Newline              |                 | None      
+Procedure            | proc            | None      
+LeftParen            | (               | None      
+Identifier           | argument        | None      
+Less                 | <               | None      
+Identifier           | Number          | None      
+Greater              | >               | None      
+Colon                | :               | None      
+Minus                | -               | None      
+Number               | Infinity        | Infinity  
+RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+Newline              |                 | None      
+If                   | if              | None      
+LeftParen            | (               | None      
+Identifier           | argument        | None      
+Greater              | >               | None      
+Number               | 0               | 0         
+RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Elif                 | elif            | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Else                 | else            | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+If                   | if              | None      
+LeftParen            | (               | None      
+Identifier           | argument        | None      
+Greater              | >               | None      
+Number               | 0               | 0         
+RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Elif                 | elseif          | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Else                 | else            | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+If                   | if              | None      
+LeftParen            | (               | None      
+Identifier           | argument        | None      
+Greater              | >               | None      
+Number               | 0               | 0         
+RightParen           | )               | None      
+Whitespace           |                 | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Else                 | else            | None      
+If                   | if              | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Else                 | else            | None      
+LeftBrace            | {               | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
+RightBrace           | }               | None      
+Newline              |                 | None      
 Generate             | generate        | None      
 LeftParen            | (               | None      
 Number               | 0x4E3           | 0x4E3     
