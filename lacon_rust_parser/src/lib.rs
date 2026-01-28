@@ -28,6 +28,66 @@
 pub mod lexer;
 pub mod shared;
 pub mod utils;
+#[test]
+fn test_complex_units_full_info() {
+    use crate::lexer::scanner::Scanner;
+    use crate::shared::unit::props::Formula;
+    use crate::shared::unit::units::UNITS;
+
+    let source = "25kg/m3 97cm/s6 25kg/dam3 97cm/μs6";
+    let mut scanner = Scanner::new(source.to_string());
+    let tokens = scanner.scan_tokens();
+
+    for token in tokens.iter().filter(|t| t.token_type.is_unit()) {
+        let suffix = token.get_unit_suffix();
+        let origin = token.get_unit_origin_suffix(); // Используем твой impl
+
+        // Ищем UnitDef, сопоставляя его с "очищенным" от приставок суффиксом
+        let unit_def = UNITS.iter().find(|u| {
+            u.symbol == origin
+                || u.parts
+                    .as_ref()
+                    .map_or(false, |(n, d)| origin == format!("{}/{}", n, d))
+        });
+
+        println!("\n{}", "=".repeat(60));
+        println!("TOKEN LEXEME:  '{}'", token.lexeme);
+        println!("RAW SUFFIX:    '{}'", suffix);
+        println!("ORIGIN SUFFIX: '{}'", origin);
+
+        if let Some(def) = unit_def {
+            println!("--- UnitDef FULL PROPERTIES ---");
+            println!("Dimension:         {:?}", def.dimension);
+            println!(
+                "Groups (N/D):      {:?} / {:?}",
+                def.numerator_group, def.denominator_group
+            );
+
+            match &def.props.formula {
+                Formula::Simple(dim) => println!("Formula:           Simple({:?})", dim),
+                Formula::Complex { num, den } => {
+                    println!("Formula:           Complex");
+                    println!("  Num:             {:?}", num);
+                    println!("  Den:             {:?}", den);
+                }
+                Formula::None => println!("Formula:           None"),
+            }
+
+            if let Some((n, d)) = def.parts.as_ref() {
+                println!("Base Parts:        {} / {}", n, d);
+            }
+
+            println!(
+                "Scale/Offset:      {} / {}",
+                def.props.scale, def.props.offset
+            );
+        } else {
+            println!("!!! [ERROR] No UnitDef found for origin '{}' !!!", origin);
+        }
+    }
+    println!("{}", "=".repeat(60));
+}
+
 #[cfg(test)]
 mod tests {
     use crate::lexer::scanner::Scanner;
@@ -38,7 +98,13 @@ mod tests {
     #[test]
     fn test_lexer_to_file() {
         let source = r#"
+				key = 1%
+				key = 1kg
 				key = 1g
+				key = 1μg/m3
+				key = 1μg/μm3
+				key = 1kg/cm3
+				key = 1kg/m3
 25 ∸ 100
 string ≣ string
 

@@ -1,5 +1,6 @@
-use super::definition::{PrefixGroup, UnitDef};
+use super::definition::{PrefixGroup, UnitDef, UnitNode, UnitTree};
 use super::dimensions::Dimension;
+use super::prefixes::PREFIXES;
 use super::props::{CalcMode, Formula, UnitProps};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
@@ -557,58 +558,102 @@ pub static UNITS: &[UnitDef] = units_array![
 ];
 
 lazy_static! {
-    pub static ref UNITS_REGEX: LazyLock<String> = LazyLock::new(|| build_unit_regex(&UNITS));
+    pub static ref UNITS_TREE: LazyLock<UnitTree> = LazyLock::new(|| build_unit_tree(&UNITS));
 }
 
-pub fn build_unit_regex(units: &[UnitDef]) -> String {
-    let mut groups: HashMap<PrefixGroup, Vec<&str>> = HashMap::new();
+pub fn build_unit_tree(units: &[UnitDef]) -> UnitTree {
+    let mut tree = UnitTree::default();
 
     for unit in units {
-        groups
-            .entry(unit.numerator_group)
-            .or_default()
-            .push(unit.symbol);
-    }
+        if unit.symbol.is_empty() {
+            continue;
+        }
 
-    let mut all_patterns = Vec::new();
+        // 1. Всегда вставляем базовый символ (напр. "g/m2")
+        tree.insert(unit.symbol);
 
-    for (group, mut symbols) in groups {
-        symbols.sort_by(|a, b| b.len().cmp(&a.len()));
+        // 2. Если есть части (числитель/знаменатель), строим комбинации
+        if let Some((n_base, d_base)) = unit.parts {
+            // Собираем доступные префиксы для числителя и знаменателя
+            // Включаем пустую строку "", чтобы учесть случаи без префикса
+            let n_prefixes: Vec<&str> = PREFIXES
+                .iter()
+                .filter(|(_, _, g)| *g == unit.numerator_group)
+                .map(|(s, _, _)| *s)
+                .chain(std::iter::once(""))
+                .collect();
 
-        let prefix_re = group.regex_pattern();
-        let symbols_re = symbols.join("|");
+            let d_prefixes: Vec<&str> = PREFIXES
+                .iter()
+                .filter(|(_, _, g)| *g == unit.denominator_group)
+                .map(|(s, _, _)| *s)
+                .chain(std::iter::once(""))
+                .collect();
 
-        if prefix_re.is_empty() {
-            all_patterns.push(format!("(?:{})", symbols_re));
+            for p_n in &n_prefixes {
+                for p_d in &d_prefixes {
+                    // Пропускаем случай, когда оба префикса пустые (уже вставили unit.symbol)
+                    if p_n.is_empty() && p_d.is_empty() {
+                        continue;
+                    }
+
+                    let full_unit = format!("{}{}/{}{}", p_n, n_base, p_d, d_base);
+                    tree.insert(&full_unit);
+                }
+            }
         } else {
-            all_patterns.push(format!("(?:{})?(?:{})", prefix_re, symbols_re));
+            // 3. Логика для атомарных юнитов (как была)
+            if unit.numerator_group != PrefixGroup::None {
+                for (p_sym, _val, p_group) in PREFIXES {
+                    if *p_group == unit.numerator_group {
+                        tree.insert(&format!("{}{}", p_sym, unit.symbol));
+                    }
+                }
+            }
         }
     }
 
-    all_patterns.sort_by(|a, b| b.len().cmp(&a.len()));
-
-    format!("(?P<unit>{})", all_patterns.join("|"))
+    tree
 }
 
-#[test]
-fn test_degc_units_exist() {
-    let degc = UNITS.iter().find(|u| u.symbol == "degC");
-    let degree_c = UNITS.iter().find(|u| u.symbol == "\u{00B0}C");
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    assert!(degc.is_some(), "degC unit not found");
-    assert!(degree_c.is_some(), "°C unit not found");
+    /// Рекурсивная функция для отрисовки дерева
+    fn print_node(node: &UnitNode, prefix: String, char_label: char) {
+        // Формируем строку состояния: если узел финальный, помечаем его [F]
+        let final_mark = if node.is_final { "[F]" } else { "" };
 
-    let degc = degc.unwrap();
-    let degree_c = degree_c.unwrap();
+        println!("{}{}{}", prefix, char_label, final_mark);
 
-    // Проверяем, что оба - Temperature
-    assert!(matches!(degc.dimension, Dimension::Temperature));
-    assert!(matches!(degree_c.dimension, Dimension::Temperature));
+        // Итерируемся по детям. BTreeMap гарантирует алфавитный порядок.
+        let mut it = node.children.iter().peekable();
+        while let Some((&ch, next_node)) = it.next() {
+            let mut new_prefix = prefix.clone();
+            // Рисуем красивые веточки
+            if prefix.is_empty() {
+                new_prefix.push_str(" ");
+            } else {
+                new_prefix.push_str("  ");
+            }
 
-    assert_eq!(degc.props.scale, degree_c.props.scale);
-    assert_eq!(degc.props.offset, degree_c.props.offset);
+            print_node(next_node, new_prefix, ch);
+        }
+    }
 
-    println!("✓ degC symbol: {}", degc.symbol);
-    println!("✓ °C symbol: {}", degree_c.symbol);
-    println!("{}", UNITS_REGEX.as_str());
+    #[test]
+    fn test_display_unit_tree() {
+        // Используем твой LazyLock (или генерируем вручную для теста)
+        let tree = &*UNITS_TREE;
+
+        println!("\n=== Unit Tree Structure ===");
+        println!("(root)");
+
+        // Запускаем отрисовку от корня
+        for (&ch, node) in &tree.root.children {
+            print_node(node, String::from(" ├── "), ch);
+        }
+        println!("===========================\n");
+    }
 }

@@ -4,17 +4,9 @@ use crate::lexer::operators::match_operator;
 use crate::lexer::position::Position;
 use crate::lexer::token::Token;
 use crate::lexer::token_type::TokenType;
-use crate::shared::unit::units::{UNITS, UNITS_REGEX};
+use crate::shared::unit::units::{UNITS, UNITS_TREE};
 use crate::utils::unit::get_unit_type;
-use lazy_static::lazy_static;
-use regex::Regex;
 
-lazy_static! {
-    static ref RE_UNIT: Regex = {
-        let pattern = UNITS_REGEX.trim_start_matches('^');
-        Regex::new(&format!("({})", pattern)).expect("Invalid Units Regex")
-    };
-}
 pub struct Scanner {
     source: Vec<char>,
     tokens: Vec<Token>,
@@ -236,8 +228,6 @@ impl Scanner {
         ));
     }
 
-    // --- Остальные методы (без изменений логики, только поддержка) ---
-
     fn scan_identifier(&mut self) {
         while let Some(c) = self.peek() {
             if c == '$' && self.peek_next() == Some('{') {
@@ -308,71 +298,32 @@ impl Scanner {
         let value_literal = self.get_slice(self.start, self.current);
         self.process_unit_suffix(value_literal);
     }
+
     fn process_unit_suffix(&mut self, value_literal: String) {
-        // 1. Создаем строку из остатка исходного кода
-        // Ограничиваем длину (например, 20 символов), так как юниты длинными не бывают
-        let max_suffix_len = 20;
-        let end_idx = std::cmp::min(self.current + max_suffix_len, self.source.len());
-        let lookahead: String = self.source[self.current..end_idx].iter().collect();
+        // 1. Берем срез чаров от текущей позиции до конца
+        let lookahead = &self.source[self.current..];
+        let unit_char_count = UNITS_TREE.longest_match(lookahead);
 
-        // 2. Пытаемся найти юнит в начале этого "взгляда вперед"
-        print!("lookahead: {}", lookahead);
-        print!("{}", RE_UNIT.as_str());
-        if let Some(mat) = RE_UNIT.find(&lookahead) {
-            let unit_str = mat.as_str();
-            let unit_char_count = unit_str.chars().count();
-
-            // Продвигаем сканнер
-            for _ in 0..unit_char_count {
-                self.advance();
-            }
-
-            // Добавляем токен Unit
-            // Важно: передаем value_literal (само число), чтобы сохранить его значение
-            self.add_token_with_literal(TokenType::Unit, value_literal);
-        } else {
-            // Если регекс не нашел юнита, проверяем на % или оставляем просто Number
-            if self.peek() == Some('%') {
-                self.advance();
-                self.add_token_with_literal(TokenType::UnitPercent, value_literal);
+        if unit_char_count > 0 {
+            // 3. Проверка границы слова (Word Boundary)
+            // Чтобы "10m" внутри "10meters" не распозналось как юнит 'm'
+            let is_valid_boundary = if let Some(&nc) = lookahead.get(unit_char_count) {
+                !(nc.is_alphanumeric() && nc != '/')
             } else {
-                self.add_token_with_literal(TokenType::Number, value_literal);
-            }
-        }
-    }
-    fn process_unit_suffix2(&mut self, value_literal: String) {
-        if let Some(c) = self.peek() {
-            if c == '%' {
-                self.advance();
-                self.add_token_with_literal(TokenType::UnitPercent, value_literal);
+                true
+            };
+
+            if is_valid_boundary {
+                for _ in 0..unit_char_count {
+                    self.advance();
+                }
+
+                self.add_token_with_literal(TokenType::Unit, value_literal);
                 return;
             }
-            if c.is_alphabetic() || c == 'µ' || c == 'μ' || c == 'Ω' || c == '\u{00B0}' {
-                let suffix_start = self.current;
-                let pos_before_suffix = self.position;
-                while let Some(nc) = self.peek() {
-                    if nc.is_alphanumeric()
-                        || nc == '/'
-                        || nc == 'µ'
-                        || nc == 'μ'
-                        || nc == 'Ω'
-                        || nc == '\u{00B0}'
-                    {
-                        self.advance();
-                    } else {
-                        break;
-                    }
-                }
-                let suffix = self.get_slice(suffix_start, self.current);
-                if let Some(t_type) = get_unit_type(&suffix) {
-                    self.add_token_with_literal(t_type, value_literal);
-                    return;
-                } else {
-                    self.current = suffix_start;
-                    self.position = pos_before_suffix;
-                }
-            }
         }
+
+        // 5. Если совпадений нет или граница не валидна — это обычное число
         self.add_token_with_literal(TokenType::Number, value_literal);
     }
 

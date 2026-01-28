@@ -1,5 +1,6 @@
 use super::dimensions::Dimension;
 use super::props::{CalcMode, UnitProps};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PrefixGroup {
@@ -22,6 +23,7 @@ impl PrefixGroup {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct UnitDef {
     pub symbol: &'static str,
     pub dimension: Dimension,
@@ -82,6 +84,54 @@ impl UnitDef {
                 100.0 * (base_value / t0).log(t1 / t0)
             }
         }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct UnitNode {
+    pub is_final: bool,
+    pub children: BTreeMap<char, UnitNode>,
+}
+
+#[derive(Debug, Default)]
+pub struct UnitTree {
+    pub root: UnitNode,
+}
+
+impl UnitTree {
+    pub fn insert(&mut self, word: &str) {
+        if word.is_empty() {
+            return;
+        }
+
+        let mut current_node = &mut self.root;
+        for ch in word.chars() {
+            // Заходим в BTreeMap и либо берем существующий узел, либо создаем новый
+            current_node = current_node.children.entry(ch).or_default();
+        }
+        // Последний узел в цепочке помечаем как валидный юнит
+        current_node.is_final = true;
+    }
+
+    pub fn longest_match(&self, input: &[char]) -> usize {
+        let mut current_node = &self.root;
+        let mut last_final_idx = 0;
+        let mut current_idx = 0;
+
+        for &ch in input {
+            if let Some(next_node) = current_node.children.get(&ch) {
+                current_node = next_node;
+                current_idx += 1;
+
+                if current_node.is_final {
+                    last_final_idx = current_idx;
+                }
+            } else {
+                break;
+            }
+        }
+
+        last_final_idx
     }
 }
 
