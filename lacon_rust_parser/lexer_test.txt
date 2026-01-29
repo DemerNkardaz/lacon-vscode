@@ -9,31 +9,19 @@ Unit                           | 1m/s6                                    | 1   
 Newline                        |                                          |                      | —          | 2:16       |            |           
 Identifier                     | key                                      |                      | —          | 3:5        | True       |           
 Equal                          | =                                        |                      | —          | 3:9        |            | WS        
-Number                         | 1                                        | 1                    | —          | 3:11       |            | WS        
-Identifier                     | km                                       |                      | —          | 3:12       |            |           
-Slash                          | /                                        |                      | —          | 3:14       |            |           
-Identifier                     | s6                                       |                      | —          | 3:15       |            |           
+Unit                           | 1km/s6                                   | 1                    | km/s6      | 3:11       |            | WS        
 Newline                        |                                          |                      | —          | 3:17       |            |           
 Identifier                     | key                                      |                      | —          | 4:5        | True       |           
 Equal                          | =                                        |                      | —          | 4:9        |            | WS        
-Number                         | 1                                        | 1                    | —          | 4:11       |            | WS        
-Identifier                     | km                                       |                      | —          | 4:12       |            |           
-Slash                          | /                                        |                      | —          | 4:14       |            |           
-Identifier                     | ks6                                      |                      | —          | 4:15       |            |           
+Unit                           | 1km/ks6                                  | 1                    | km/ks6     | 4:11       |            | WS        
 Newline                        |                                          |                      | —          | 4:18       |            |           
 Identifier                     | key                                      |                      | —          | 5:5        | True       |           
 Equal                          | =                                        |                      | —          | 5:9        |            | WS        
-Number                         | 1                                        | 1                    | —          | 5:11       |            | WS        
-Identifier                     | Mm                                       |                      | —          | 5:12       |            |           
-Slash                          | /                                        |                      | —          | 5:14       |            |           
-Identifier                     | μs6                                      |                      | —          | 5:15       |            |           
+Unit                           | 1Mm/μs6                                  | 1                    | Mm/μs6     | 5:11       |            | WS        
 Newline                        |                                          |                      | —          | 5:18       |            |           
 Identifier                     | key                                      |                      | —          | 6:5        | True       |           
 Equal                          | =                                        |                      | —          | 6:9        |            | WS        
-Number                         | 1                                        | 1                    | —          | 6:11       |            | WS        
-Identifier                     | μm                                       |                      | —          | 6:12       |            |           
-Slash                          | /                                        |                      | —          | 6:14       |            |           
-Identifier                     | Ms6                                      |                      | —          | 6:15       |            |           
+Unit                           | 1μm/Ms6                                  | 1                    | μm/Ms6     | 6:11       |            | WS        
 Newline                        |                                          |                      | —          | 6:18       |            |           
 Identifier                     | key                                      |                      | —          | 7:5        | True       |           
 Equal                          | =                                        |                      | —          | 7:9        |            | WS        
@@ -712,5 +700,4 @@ Identifier                     | to-upper                                 |     
 LeftParen                      | (                                        |                      | —          | 109:24     |            |           
 RightParen                     | )                                        |                      | —          | 109:25     |            |           
 Newline                        |                                          |                      | —          | 109:26     |            |           
-Newline                        |                                          |                      | —          | 110:1      |            |           
-EOF                            |                                          |                      | —          | 111:1      |            |           
+Newline                        |            

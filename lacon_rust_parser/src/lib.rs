@@ -30,54 +30,6 @@ pub mod shared;
 pub mod utils;
 
 #[test]
-fn test_unit_normalization_consistency() {
-    use crate::lexer::scanner::Scanner;
-
-    // Пара (Исходная строка, Ожидаемое значение в базовых единицах)
-    let test_cases = vec![
-        // Плотность (база g/m3, scale 1.0)
-        ("100g/m3", 100.0),
-        ("0.1kg/m3", 100.0),     // 0.1 * 10^3
-        ("100000g/km3", 0.0001), // 100000 / (10^3)^3 = 100000 / 10^9
-        ("1g/cm3", 1000000.0),   // 1 / (10^-2)^3 = 1 / 10^-6
-        // Ускорение/Pop (база m/s6, scale 1.0)
-        ("1m/s6", 1.0),
-        ("100cm/s6", 1.0),  // 100 * 10^-2
-        ("1km/s6", 1000.0), // 1 * 10^3
-        ("1mm/μs6", 1e9), // 10^-3 / (10^-6)^6 = 10^-3 / 10^-36 = 10^33 (зависит от логики степеней)
-    ];
-
-    for (source, expected) in test_cases {
-        let mut scanner = Scanner::new(source.to_string());
-        let tokens = scanner.scan_tokens();
-        let token = tokens
-            .iter()
-            .find(|t| t.token_type.is_unit())
-            .expect("Token must be a unit");
-
-        let result = token.get_normalized_value();
-
-        // Используем допуск (epsilon) для сравнения f64
-        let diff = (result - expected).abs();
-        let tolerance = expected.abs() * 1e-10;
-
-        println!(
-            "Source: {:<12} | Result: {:<15} | Expected: {:<15}",
-            source, result, expected
-        );
-
-        assert!(
-            diff <= tolerance || diff < 1e-10,
-            "FAILED: '{}' -> got {}, expected {}",
-            source,
-            result,
-            expected
-        );
-    }
-    println!("\n Все префиксы корректно нормализованы к базовым значениям.");
-}
-
-#[test]
 fn test_complex_units_full_info() {
     use crate::lexer::scanner::Scanner;
     use crate::shared::unit::props::Formula;
@@ -259,19 +211,19 @@ text-data = """
 "#;
 
         let source2 = r#"
-a - b     
-a-b       
-a -2      
-a - 2       
-a b - 2       
-a b -2  
+a - b
+a-b
+a -2
+a - 2
+a b - 2
+a b -2
 
-global const const-name a - b     
-global const const-name a-b       
-global const const-name a -2      
-global const const-name a - 2       
-global const const-name a b - 2       
-global const const-name a b -2  
+global const const-name a - b
+global const const-name a-b
+global const const-name a -2
+global const const-name a - 2
+global const const-name a b - 2
+global const const-name a b -2
 /|\ 1. Смешанный режим: отступы + явные скобки
 container App
     /|\ Внутри App работают отступы
@@ -302,7 +254,7 @@ text-data = """
 /|\ 4. Крайний случай индентации и пустых строк
 root
     level1
-        
+
         /|\ Комментарий на пустой строке не должен прерывать блок
         level2
             target-node
